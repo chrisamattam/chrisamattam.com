@@ -1,0 +1,154 @@
+/* ── shadcn base imports ── */
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/* ── Design system tokens ── */
+@import './ds/tokens/colors.css';
+@import './ds/tokens/typography.css';
+@import './ds/tokens/spacing.css';
+@import './ds/tokens/motion.css';
+@import './ds/tokens/radius.css';
+@import './ds/tokens/shadows.css';
+
+/* ── Tailwind v4 theme mapping (inline = uses CSS vars at runtime, supports dark mode) ── */
+@theme inline {
+  --color-surface-page:    var(--surface-page);
+  --color-surface-subtle:  var(--surface-subtle);
+  --color-surface-card:    var(--surface-card);
+  --color-surface-sunken:  var(--surface-sunken);
+  --color-surface-inverse: var(--surface-inverse);
+  --color-text-primary:    var(--text-primary);
+  --color-text-secondary:  var(--text-secondary);
+  --color-text-tertiary:   var(--text-tertiary);
+  --color-text-muted:      var(--text-muted);
+  --color-text-inverse:    var(--text-inverse);
+  --color-text-link:       var(--text-link);
+  --color-border-subtle:   var(--border-subtle);
+  --color-border-default:  var(--border-default);
+  --color-border-strong:   var(--border-strong);
+  --color-accent:          var(--accent);
+  --color-accent-hover:    var(--accent-hover);
+  --color-accent-subtle:   var(--accent-subtle);
+  --font-sans:             var(--font-sans);
+  --font-mono:             var(--font-mono);
+  --font-logo:             var(--font-logo);
+}
+
+@custom-variant dark (&:is([data-theme="dark"] *));
+
+/* ── Base resets ── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-family: var(--font-sans);
+}
+
+body {
+  background-color: var(--surface-page);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.65;
+  min-height: 100dvh;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* ── Reveal animations ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes expandIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes spineDraw {
+  from { transform: scaleY(0); }
+  to   { transform: scaleY(1); }
+}
+@keyframes dotPop {
+  0%   { transform: scale(0); opacity: 0; }
+  70%  { transform: scale(1.4); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Content is visible by default. JS adds .reveal-armed to hide-then-animate;
+   if JS never runs (or misses an element) the content simply stays visible. */
+[data-reveal].reveal-armed {
+  opacity: 0;
+  transform: translateY(20px);
+}
+[data-reveal].reveal-armed.in {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.72s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.72s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── Layout ── */
+.container-page {
+  max-width: var(--container-lg);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+/* ── Canvas elements must never have an opaque background ── */
+canvas { background: transparent; }
+
+/* ── --foreground in HSL for HeroLines gradient (shadcn uses oklch which breaks hsl() syntax) ── */
+:root                { --foreground: 35 8% 16%; }
+[data-theme="dark"]  { --foreground: 43 18% 91%; }
+
+/* ── Hover link utility ── */
+.hover-link {
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 160ms ease;
+}
+.hover-link:hover { color: var(--text-primary); }
+
+.hover-link-secondary {
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 160ms ease;
+}
+.hover-link-secondary:hover { color: var(--text-primary); }
+
+/* ── Brand / trust-marker icon links (preserve their colour, fade on hover) ── */
+.icon-link,
+.trust-icon {
+  transition: opacity 160ms ease;
+}
+.icon-link:hover,
+.trust-icon:hover {
+  opacity: 0.6;
+}
+
+/* ── Prose ── */
+.prose {
+  color: var(--text-secondary);
+  max-width: 68ch;
+  line-height: 1.75;
+}
+.prose h1, .prose h2, .prose h3 {
+  color: var(--text-primary);
+  font-weight: 500;
+  margin-top: 2.5rem;
+  margin-bottom: 0.75rem;
+}
+.prose p { margin-bottom: 1.25rem; }
+.prose a {
+  color: var(--text-link);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+.prose code {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+  background: var(--surface-subtle);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xs);
+  padding: 0.1em 0.35em;
+}

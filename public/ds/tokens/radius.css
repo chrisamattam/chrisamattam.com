@@ -1,0 +1,22 @@
+/* ============================================================
+   RADIUS
+   Restrained corners. Controls and cards share a calm radius;
+   pills for chips/tags only. Nothing is overly rounded.
+   ============================================================ */
+
+:root {
+  --radius-none: 0;
+  --radius-xs:   4px;
+  --radius-sm:   6px;
+  --radius-md:   10px;
+  --radius-lg:   14px;
+  --radius-xl:   20px;
+  --radius-2xl:  28px;
+  --radius-pill: 999px;
+
+  /* Semantic */
+  --radius-control: var(--radius-md);
+  --radius-card:    var(--radius-lg);
+  --radius-modal:   var(--radius-xl);
+  --radius-chip:    var(--radius-pill);
+}

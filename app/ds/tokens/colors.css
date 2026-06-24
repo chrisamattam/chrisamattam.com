@@ -1,0 +1,142 @@
+/* ============================================================
+   COLORS — Black · Silver · White
+   A strict monochrome system in the Apple tradition. The base
+   is a cool neutral ramp; the "accent" is simply ink (near-black
+   in light, near-white in dark). Silver carries the mid-tones.
+   The only chromatic exception is functional status (success /
+   warning / danger), kept muted and reserved for badges, dots
+   and figures — never decoration.
+   ============================================================ */
+
+:root {
+  /* --- Neutral ramp (cool near-black → white) --- */
+  --neutral-0:   #FFFFFF;
+  --neutral-50:  #F5F5F7;   /* Apple off-white */
+  --neutral-100: #ECECEF;
+  --neutral-200: #E2E2E6;
+  --neutral-300: #D2D2D7;   /* silver */
+  --neutral-400: #A6A6AD;
+  --neutral-500: #86868B;   /* Apple secondary grey */
+  --neutral-600: #57575B;
+  --neutral-700: #3A3A3D;
+  --neutral-800: #2A2A2D;
+  --neutral-900: #1D1D1F;   /* Apple ink */
+  --neutral-950: #000000;   /* true black */
+
+  /* --- Graphite / silver accent ramp ---
+     Light silver (50) → true black (700). 500 is the primary
+     "ink" accent; the lower steps are the silver tones. */
+  --graphite-50:  #F5F5F7;
+  --graphite-100: #ECECEF;
+  --graphite-200: #D2D2D7;   /* silver */
+  --graphite-300: #B0B0B7;
+  --graphite-400: #6E6E73;
+  --graphite-500: #1D1D1F;   /* primary — ink */
+  --graphite-600: #000000;   /* hover / pressed — black */
+  --graphite-700: #000000;
+  --graphite-800: #000000;
+
+  /* --- Silver (named, for metallic surfaces & dividers) --- */
+  --silver-light: #E2E2E6;
+  --silver:       #D2D2D7;
+  --silver-dark:  #86868B;
+
+  /* --- Apple-style signal blue (the accent) --- */
+  --blue-50:  #EAF3FE;
+  --blue-100: #D2E4FB;
+  --blue-200: #A6C8F6;
+  --blue-300: #6DA8F0;
+  --blue-400: #2997FF;   /* Apple bright (dark-mode link / vivid) */
+  --blue-500: #0071E3;   /* Apple primary button */
+  --blue-600: #0064CC;   /* hover / pressed */
+  --blue-700: #0058B0;
+
+  /* --- Functional status (MONOCHROME) ---
+     No hue anywhere. Status is distinguished by weight + label +
+     iconography, not color: success reads as ink, danger as solid
+     black, warning as mid-grey. Tints are silver steps. */
+  --green-500:  #1D1D1F;   /* success → ink */
+  --green-50:   #ECECEF;
+  --amber-500:  #6E6E73;   /* warning → mid grey */
+  --amber-50:   #E2E2E6;
+  --red-500:    #000000;   /* danger → black */
+  --red-50:     #D2D2D7;
+
+  /* ================= SEMANTIC ALIASES (light) ================= */
+  /* Surfaces — warm paper cream (Aarron Walter palette) */
+  --surface-page:    #F2ECDA;
+  --surface-subtle:  #EAE2CC;
+  --surface-card:    #F6F1E2;
+  --surface-sunken:  #E3DBC2;
+  --surface-inverse: #2B2926;
+
+  /* Text — warm charcoal on cream */
+  --text-primary:    #2B2926;
+  --text-secondary:  #57544D;
+  --text-tertiary:   #7A766C;
+  --text-muted:      #A59F90;
+  --text-inverse:    #F2ECDA;
+  --text-link:       var(--blue-600);
+
+  /* Borders / lines — warm, low-contrast */
+  --border-subtle:   #DDD4BD;
+  --border-default:  #CEC4A9;
+  --border-strong:   #B5AA8C;
+
+  /* Accent — Apple blue */
+  --accent:          var(--blue-500);
+  --accent-hover:    var(--blue-600);
+  --accent-text:     #FFFFFF;
+  --accent-subtle:   var(--blue-50);
+  --accent-ring:     color-mix(in oklch, var(--blue-500) 30%, transparent);
+
+  /* Status */
+  --success:         var(--green-500);
+  --success-subtle:  var(--green-50);
+  --warning:         var(--amber-500);
+  --warning-subtle:  var(--amber-50);
+  --danger:          var(--red-500);
+  --danger-subtle:   var(--red-50);
+
+  /* Focus ring — follows accent */
+  --focus-ring:      var(--accent);
+}
+
+/* ===================== DARK THEME ===================== */
+[data-theme="dark"] {
+  /* Surfaces — Claude code-editor warm dark */
+  --surface-page:    #262624;
+  --surface-subtle:  #1F1F1D;
+  --surface-card:    #2E2E2B;
+  --surface-sunken:  #1A1A18;
+  --surface-inverse: #F2ECDA;
+
+  --text-primary:    #EDEAE2;
+  --text-secondary:  #B0ABA0;
+  --text-tertiary:   #8A857A;
+  --text-muted:      #645F56;
+  --text-inverse:    #262624;
+  --text-link:       #2997FF;
+
+  --border-subtle:   #34332F;
+  --border-default:  #45433D;
+  --border-strong:   #5A574F;
+
+  /* Accent — Apple blue, brighter on dark */
+  --accent:          var(--blue-400);
+  --accent-hover:    #47A9FF;
+  --accent-text:     #FFFFFF;
+  --accent-subtle:   #0E2A45;
+  --accent-ring:     color-mix(in oklch, var(--blue-400) 35%, transparent);
+
+  /* Status — monochrome (light text/ink on dark surfaces) */
+  --green-500:  #F5F5F7;
+  --amber-500:  #B0B0B7;
+  --red-500:    #FFFFFF;
+  --success:         #F5F5F7;
+  --warning:         #B0B0B7;
+  --danger:          #FFFFFF;
+  --success-subtle:  #2A2A2D;
+  --warning-subtle:  #242427;
+  --danger-subtle:   #34343A;
+}

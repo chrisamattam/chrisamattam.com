@@ -1,0 +1,27 @@
+/* ============================================================
+   SHADOWS & ELEVATION
+   Soft, low-contrast shadows. Light mode leans on tight,
+   neutral shadows; dark mode leans on borders + faint glow.
+   ============================================================ */
+
+:root {
+  --shadow-xs:  0 1px 2px rgba(16, 16, 24, 0.05);
+  --shadow-sm:  0 1px 3px rgba(16, 16, 24, 0.07), 0 1px 2px rgba(16, 16, 24, 0.04);
+  --shadow-md:  0 4px 12px rgba(16, 16, 24, 0.08), 0 1px 3px rgba(16, 16, 24, 0.05);
+  --shadow-lg:  0 12px 32px rgba(16, 16, 24, 0.10), 0 4px 10px rgba(16, 16, 24, 0.05);
+  --shadow-xl:  0 28px 64px rgba(16, 16, 24, 0.14), 0 8px 20px rgba(16, 16, 24, 0.07);
+
+  /* Focus / accent ring */
+  --ring-focus: 0 0 0 3px var(--accent-ring);
+
+  /* Hairline (1px inset border substitute) */
+  --hairline: inset 0 0 0 1px var(--border-subtle);
+}
+
+[data-theme="dark"] {
+  --shadow-xs:  0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-sm:  0 1px 3px rgba(0, 0, 0, 0.5);
+  --shadow-md:  0 4px 14px rgba(0, 0, 0, 0.55);
+  --shadow-lg:  0 16px 40px rgba(0, 0, 0, 0.6);
+  --shadow-xl:  0 28px 70px rgba(0, 0, 0, 0.7);
+}

@@ -1,0 +1,64 @@
+/* ============================================================
+   TYPOGRAPHY
+   Type does the heavy lifting. Hanken Grotesk for everything
+   visible; JetBrains Mono for data, labels, eyebrows, code.
+   Scale is a modular ramp tuned for confident, large display.
+   ============================================================ */
+
+:root {
+  /* Families */
+  --font-sans: "Hanken Grotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-logo: "Outfit", ui-sans-serif, system-ui, sans-serif; /* brand / logo face — geometric grotesque */
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  /* Weights */
+  --weight-light: 300;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  --weight-extrabold: 800;
+
+  /* Type scale (px in rem, 16px base) */
+  --text-xs:    0.75rem;   /* 12 */
+  --text-sm:    0.875rem;  /* 14 */
+  --text-base:  1rem;      /* 16 */
+  --text-md:    1.125rem;  /* 18 */
+  --text-lg:    1.375rem;  /* 22 */
+  --text-xl:    1.75rem;   /* 28 */
+  --text-2xl:   2.25rem;   /* 36 */
+  --text-3xl:   3rem;      /* 48 */
+  --text-4xl:   4rem;      /* 64 */
+  --text-5xl:   5.25rem;   /* 84 */
+
+  /* Line heights */
+  --leading-tight:   1.05;
+  --leading-snug:    1.18;
+  --leading-normal:  1.45;
+  --leading-relaxed: 1.65;
+
+  /* Letter spacing */
+  --tracking-tighter: -0.03em;
+  --tracking-tight:   -0.015em;
+  --tracking-normal:  0em;
+  --tracking-wide:    0.04em;
+  --tracking-eyebrow: 0.14em;  /* mono uppercase eyebrows */
+
+  /* Semantic roles */
+  --display-font: var(--font-display);
+  --display-weight: var(--weight-extrabold);
+  --display-tracking: var(--tracking-tighter);
+
+  --heading-font: var(--font-sans);
+  --heading-weight: var(--weight-semibold);
+  --heading-tracking: var(--tracking-tight);
+
+  --body-font: var(--font-sans);
+  --body-weight: var(--weight-regular);
+  --body-leading: var(--leading-relaxed);
+
+  --eyebrow-font: var(--font-mono);
+  --eyebrow-weight: var(--weight-medium);
+  --eyebrow-tracking: var(--tracking-eyebrow);
+}
