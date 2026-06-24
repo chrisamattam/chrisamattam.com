@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Hanken_Grotesk, JetBrains_Mono, Outfit } from "next/font/google";
 import Script from "next/script";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -48,6 +48,15 @@ export const metadata: Metadata = {
     title: "Chris Mattam",
     description: "Product manager building AI-native fintech products.",
   },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#F2ECDA" },
+    { media: "(prefers-color-scheme: dark)", color: "#1A1916" },
+  ],
 };
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID;

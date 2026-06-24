@@ -59,14 +59,84 @@ function LogoMark() {
   );
 }
 
+function BurgerIcon({ open }: { open: boolean }) {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" aria-hidden="true">
+      {open ? (
+        <>
+          <path d="M6 6l12 12" />
+          <path d="M18 6l-12 12" />
+        </>
+      ) : (
+        <>
+          <path d="M3.5 7h17" />
+          <path d="M3.5 12h17" />
+          <path d="M3.5 17h17" />
+        </>
+      )}
+    </svg>
+  );
+}
+
 export default function Nav() {
   const pathname = usePathname();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => setMounted(true), []);
 
+  // Close the mobile menu whenever the route changes
+  useEffect(() => setMenuOpen(false), [pathname]);
+
   const isDark = theme === "dark";
+
+  // Compact icon-only toggle for the mobile bar (kept outside the hamburger
+  // so the theme is one tap away).
+  const ThemeToggleCompact = mounted ? (
+    <button
+      className="nav-icon-btn"
+      onClick={() => setTheme(isDark ? "light" : "dark")}
+      aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+      title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+    >
+      {isDark ? <SunIcon /> : <MoonIcon />}
+    </button>
+  ) : null;
+
+  const ThemeToggle = mounted ? (
+    <button
+      onClick={() => setTheme(isDark ? "light" : "dark")}
+      aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+      title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: "0.4rem",
+        height: 32,
+        color: "var(--text-secondary)",
+        background: "transparent",
+        border: "1px solid var(--border-default)",
+        borderRadius: "var(--radius-sm)",
+        padding: "0 0.6rem",
+        cursor: "pointer",
+        transition: "var(--transition-control)",
+      }}
+      onMouseEnter={(e) => {
+        (e.currentTarget as HTMLButtonElement).style.color = "var(--text-primary)";
+        (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--border-strong)";
+      }}
+      onMouseLeave={(e) => {
+        (e.currentTarget as HTMLButtonElement).style.color = "var(--text-secondary)";
+        (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--border-default)";
+      }}
+    >
+      {isDark ? <SunIcon /> : <MoonIcon />}
+      <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.06em" }}>
+        {isDark ? "Light" : "Dark"}
+      </span>
+    </button>
+  ) : null;
 
   return (
     <nav
@@ -95,6 +165,7 @@ export default function Nav() {
         <Link href="/" style={{ display: "flex", alignItems: "center", gap: "0.625rem", textDecoration: "none" }}>
           <LogoMark />
           <span
+            className="nav-shorten-name"
             style={{
               fontSize: 15,
               fontWeight: 500,
@@ -107,8 +178,8 @@ export default function Nav() {
           </span>
         </Link>
 
-        {/* Right side */}
-        <div style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
+        {/* Desktop links + toggle */}
+        <div className="nav-desktop">
           {navLinks.map((link) => {
             const isActive = pathname === link.href || pathname.startsWith(link.href + "/");
             return (
@@ -147,41 +218,41 @@ export default function Nav() {
             }}
           />
 
-          {/* Theme toggle — sun in dark mode, moon in light mode */}
-          {mounted && (
-            <button
-              onClick={() => setTheme(isDark ? "light" : "dark")}
-              aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
-              title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+          {ThemeToggle}
+        </div>
+
+        {/* Mobile: visible theme toggle + hamburger */}
+        <div className="nav-mobile-actions">
+          {ThemeToggleCompact}
+          <button
+            className="nav-burger"
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={menuOpen}
+            onClick={() => setMenuOpen((v) => !v)}
+          >
+            <BurgerIcon open={menuOpen} />
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile dropdown panel */}
+      <div className={`nav-panel${menuOpen ? " open" : ""}`}>
+        {navLinks.map((link) => {
+          const isActive = pathname === link.href || pathname.startsWith(link.href + "/");
+          return (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="nav-panel-link"
               style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "0.4rem",
-                height: 32,
-                color: "var(--text-secondary)",
-                background: "transparent",
-                border: "1px solid var(--border-default)",
-                borderRadius: "var(--radius-sm)",
-                padding: "0 0.6rem",
-                cursor: "pointer",
-                transition: "var(--transition-control)",
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.color = "var(--text-primary)";
-                (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--border-strong)";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.color = "var(--text-secondary)";
-                (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--border-default)";
+                color: isActive ? "var(--text-primary)" : "var(--text-secondary)",
+                fontWeight: isActive ? 500 : 400,
               }}
             >
-              {isDark ? <SunIcon /> : <MoonIcon />}
-              <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.06em" }}>
-                {isDark ? "Light" : "Dark"}
-              </span>
-            </button>
-          )}
-        </div>
+              {link.label}
+            </Link>
+          );
+        })}
       </div>
     </nav>
   );

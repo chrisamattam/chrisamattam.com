@@ -72,19 +72,20 @@ function MilestoneRow({ m, index }: { m: Milestone; index: number }) {
     <div
       data-reveal
       data-stagger={index * 60}
-      style={{ display: "grid", gridTemplateColumns: "120px 1fr", position: "relative" }}
+      className="timeline-row"
     >
       {/* Period */}
-      <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--text-muted)", textAlign: "right", paddingRight: "1.5rem", paddingTop: "0.35rem", lineHeight: 1.4 }}>
+      <div className="timeline-period" style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--text-muted)", paddingTop: "0.35rem", lineHeight: 1.4 }}>
         {m.period}
       </div>
 
       {/* Content */}
-      <div style={{ paddingLeft: "2rem", paddingTop: "0.2rem", paddingBottom: "1.6rem", position: "relative" }}>
+      <div className="timeline-content" style={{ paddingTop: "0.2rem", paddingBottom: "1.6rem", position: "relative" }}>
         {/* Dot */}
         <div
+          className="timeline-dot"
           style={{
-            position: "absolute", left: -4, top: 6, width: 8, height: 8, borderRadius: "50%",
+            position: "absolute", top: 6, width: 8, height: 8, borderRadius: "50%",
             background: "var(--surface-page)", border: "1.5px solid var(--border-strong)", zIndex: 1,
             animation: `dotPop 0.45s cubic-bezier(0.34,1.56,0.64,1) ${0.3 + index * 0.08}s both`,
           }}
@@ -135,8 +136,9 @@ export default function Timeline() {
         <div style={{ position: "relative" }}>
           {/* Spine */}
           <div
+            className="timeline-spine"
             style={{
-              position: "absolute", left: 119, top: 8, bottom: 32, width: 1,
+              position: "absolute", top: 8, bottom: 32, width: 1,
               background: "var(--border-subtle)", transformOrigin: "top center",
               animation: "spineDraw 1.2s cubic-bezier(0.16,1,0.3,1) 0.3s both",
             }}
