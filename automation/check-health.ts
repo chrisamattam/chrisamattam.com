@@ -15,7 +15,7 @@ export interface HealthReport {
   autoRetired: { slug: string; file: string; from: LiveStatus }[];
 }
 type FetchResult = { ok: boolean; httpStatus?: number };
-type FetchImpl = (url: string) => Promise<FetchResult>;
+type FetchImpl = (url: string, signal?: AbortSignal) => Promise<FetchResult>;
 
 export function readProjects(dir: string): ProjectMeta[] {
   return readdirSync(dir)
@@ -28,9 +28,9 @@ export function readProjects(dir: string): ProjectMeta[] {
     .filter((p) => typeof p.liveUrl === "string" && p.liveUrl.length > 0);
 }
 
-const realFetch: FetchImpl = async (url) => {
+const realFetch: FetchImpl = async (url, signal) => {
   try {
-    const res = await fetch(url, { method: "GET", redirect: "follow" });
+    const res = await fetch(url, { method: "GET", redirect: "follow", signal });
     return { ok: res.ok, httpStatus: res.status };
   } catch {
     return { ok: false };
@@ -40,8 +40,8 @@ const realFetch: FetchImpl = async (url) => {
 export async function probe(url: string, retries: number, timeoutMs: number, fetchImpl: FetchImpl = realFetch): Promise<"up" | "down"> {
   for (let attempt = 0; attempt < retries; attempt++) {
     const ac = new AbortController();
-    const timer = setTimeout(() => ac.signal && ac.abort(), timeoutMs);
-    const res = await fetchImpl(url);
+    const timer = setTimeout(() => ac.abort(), timeoutMs);
+    const res = await fetchImpl(url, ac.signal);
     clearTimeout(timer);
     if (classifyResponse(res) === "up") return "up";
     if (attempt < retries - 1) await new Promise((r) => setTimeout(r, 500 * (attempt + 1)));

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mkdtempSync, writeFileSync, readFileSync, rmSync, mkdirSync } from "node:fs";
+import { mkdtempSync, writeFileSync, readFileSync, rmSync, mkdirSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { runHealthCheck } from "./check-health";
@@ -8,12 +8,12 @@ let dir: string;
 let projectsDir: string;
 let stateFile: string;
 
-const mdx = (slug: string, status: string, url: string) => `---
+const mdx = (slug: string, status: string, url: string, badgeTone = "green") => `---
 title: "${slug}"
 slug: "${slug}"
 date: "2026-01-01"
 status: ${status}
-badgeTone: green
+badgeTone: ${badgeTone}
 liveUrl: "${url}"
 summary: "s"
 featured: false
@@ -27,7 +27,7 @@ beforeEach(() => {
   mkdirSync(projectsDir);
   stateFile = join(dir, "health-state.json");
   writeFileSync(join(projectsDir, "alpha.mdx"), mdx("alpha", "active", "https://up.example"));
-  writeFileSync(join(projectsDir, "beta.mdx"), mdx("beta", "active", "https://down.example"));
+  writeFileSync(join(projectsDir, "beta.mdx"), mdx("beta", "active", "https://down.example", "accent"));
 });
 
 afterEach(() => rmSync(dir, { recursive: true, force: true }));
@@ -49,7 +49,9 @@ describe("runHealthCheck", () => {
     expect(report.down.map((d) => d.slug)).toContain("beta");
     expect(report.autoRetired.map((r) => r.slug)).toContain("beta");
     // MDX rewritten
-    expect(readFileSync(join(projectsDir, "beta.mdx"), "utf8")).toContain("status: learned");
+    const betaMdx = readFileSync(join(projectsDir, "beta.mdx"), "utf8");
+    expect(betaMdx).toContain("status: learned");
+    expect(betaMdx).toContain("badgeTone: green");
     // state persisted
     const state = JSON.parse(readFileSync(stateFile, "utf8"));
     expect(state.alpha.lastStatus).toBe("up");
@@ -63,5 +65,6 @@ describe("runHealthCheck", () => {
       projectsDir, stateFile, today: "2026-06-26", dryRun: true, fetchImpl, retries: 1, timeoutMs: 1000,
     });
     expect(readFileSync(join(projectsDir, "beta.mdx"), "utf8")).toBe(before);
+    expect(existsSync(stateFile)).toBe(false);
   });
 });
