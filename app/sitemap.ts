@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { allProjects, allPosts } from "contentlayer/generated";
 
-const BASE = "https://chrisamattam.com";
+const BASE = "https://chrisamattam-com.vercel.app";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const staticRoutes = ["", "/work", "/writing", "/reading", "/colophon", "/contact"].map((path) => ({
