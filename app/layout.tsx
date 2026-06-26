@@ -27,19 +27,19 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://chrisamattam.com"),
+  metadataBase: new URL("https://chrisamattam-com.vercel.app"),
   title: {
     default: "Chris Mattam — Product Manager",
     template: "%s · Chris Mattam",
   },
   description: "Product manager building AI-native fintech products. Based in Bengaluru.",
   keywords: ["Chris Mattam", "Product Manager", "fintech", "AI", "Bengaluru", "Butter Money", "BITS Pilani"],
-  authors: [{ name: "Chris Mattam", url: "https://chrisamattam.com" }],
+  authors: [{ name: "Chris Mattam", url: "https://chrisamattam-com.vercel.app" }],
   creator: "Chris Mattam",
   openGraph: {
     title: "Chris Mattam",
     description: "Product manager building AI-native fintech products.",
-    url: "https://chrisamattam.com",
+    url: "https://chrisamattam-com.vercel.app",
     siteName: "Chris Mattam",
     locale: "en_IN",
     type: "website",
