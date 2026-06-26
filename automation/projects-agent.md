@@ -13,7 +13,7 @@ You verify each project's live link and surface problems for the daily PR. The d
 ## Output (return to orchestrator)
 Return the script's report verbatim plus a one-line human summary, e.g.:
 ```
-{ "checked": 7, "down": [ { "slug": "x", "liveUrl": "https://..." } ], "autoRetired": [ { "slug": "y", "from": "active" } ] }
+{ "checked": 5, "down": [ { "slug": "x", "liveUrl": "https://..." } ], "autoRetired": [ { "slug": "y", "from": "active" } ] }
 ```
 
 ## Guardrails
