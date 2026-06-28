@@ -13,6 +13,9 @@ export interface HealthReport {
   checked: number;
   down: { slug: string; liveUrl: string }[];
   autoRetired: { slug: string; file: string; from: LiveStatus }[];
+  // Set when every checked link reported down — almost always a runner-network
+  // failure rather than reality, so no state is written and nothing is retired.
+  skippedAllDown?: boolean;
 }
 type FetchResult = { ok: boolean; httpStatus?: number };
 type FetchImpl = (url: string, signal?: AbortSignal) => Promise<FetchResult>;
@@ -49,27 +52,44 @@ export async function probe(url: string, retries: number, timeoutMs: number, fet
   return "down";
 }
 
-export async function runHealthCheck(opts: {
-  projectsDir: string; stateFile: string; today: string; dryRun: boolean;
-  fetchImpl?: FetchImpl; retries?: number; timeoutMs?: number;
-}): Promise<HealthReport> {
-  const retries = opts.retries ?? config.liveLinkRetries;
-  const timeoutMs = opts.timeoutMs ?? config.liveLinkTimeoutMs;
-  const state: Record<string, HealthRecord> = existsSync(opts.stateFile)
-    ? JSON.parse(readFileSync(opts.stateFile, "utf8"))
-    : {};
-  const projects = readProjects(opts.projectsDir);
-  const report: HealthReport = { checked: 0, down: [], autoRetired: [] };
+/**
+ * Apply already-gathered up/down results to the persisted health state.
+ * Free of network I/O — the up/down signal is supplied by the caller (the local
+ * probe for dev, or the agent's WebFetch tool in the cloud sandbox where node
+ * fetch is blocked). Results are keyed by project slug; projects with no result
+ * are left untouched.
+ */
+export function applyResults(opts: {
+  projects: ProjectMeta[];
+  results: Record<string, "up" | "down">;
+  stateFile: string;
+  today: string;
+  dryRun: boolean;
+}): HealthReport {
+  const { projects, results, stateFile, today, dryRun } = opts;
+  const checked = projects.filter((p) => results[p.slug] !== undefined);
 
-  for (const p of projects) {
-    report.checked++;
-    const result = await probe(p.liveUrl, retries, timeoutMs, opts.fetchImpl);
-    const record = nextHealthState(state[p.slug], { liveUrl: p.liveUrl, result }, opts.today);
+  // Safety valve: if every checked link is down, it's overwhelmingly more likely
+  // the runner can't reach the internet than that every project died at once.
+  // Write nothing and retire nothing — this makes a mass false-retirement impossible.
+  const allDown = checked.length > 0 && checked.every((p) => results[p.slug] === "down");
+  if (allDown) {
+    return { checked: checked.length, down: [], autoRetired: [], skippedAllDown: true };
+  }
+
+  const state: Record<string, HealthRecord> = existsSync(stateFile)
+    ? JSON.parse(readFileSync(stateFile, "utf8"))
+    : {};
+  const report: HealthReport = { checked: checked.length, down: [], autoRetired: [] };
+
+  for (const p of checked) {
+    const result = results[p.slug];
+    const record = nextHealthState(state[p.slug], { liveUrl: p.liveUrl, result }, today);
     state[p.slug] = record;
     if (result === "down") report.down.push({ slug: p.slug, liveUrl: p.liveUrl });
-    if (shouldAutoRetire(record, p.status, opts.today, config.downtimeThresholdDays)) {
+    if (shouldAutoRetire(record, p.status, today, config.downtimeThresholdDays)) {
       report.autoRetired.push({ slug: p.slug, file: p.file, from: p.status });
-      if (!opts.dryRun) {
+      if (!dryRun) {
         let src = readFileSync(p.file, "utf8");
         src = setFrontmatterField(src, "status", "learned");
         src = setFrontmatterField(src, "badgeTone", "green");
@@ -78,18 +98,51 @@ export async function runHealthCheck(opts: {
     }
   }
 
-  if (!opts.dryRun) writeFileSync(opts.stateFile, JSON.stringify(state, null, 2) + "\n");
+  if (!dryRun) writeFileSync(stateFile, JSON.stringify(state, null, 2) + "\n");
   return report;
 }
 
+/**
+ * Local/dev path: probe each live link with node fetch, then apply the results.
+ * In the cloud sandbox node fetch is blocked, so use `--list` + the WebFetch tool
+ * + `--apply` instead (see automation/projects-agent.md).
+ */
+export async function runHealthCheck(opts: {
+  projectsDir: string; stateFile: string; today: string; dryRun: boolean;
+  fetchImpl?: FetchImpl; retries?: number; timeoutMs?: number;
+}): Promise<HealthReport> {
+  const retries = opts.retries ?? config.liveLinkRetries;
+  const timeoutMs = opts.timeoutMs ?? config.liveLinkTimeoutMs;
+  const projects = readProjects(opts.projectsDir);
+  const results: Record<string, "up" | "down"> = {};
+  for (const p of projects) {
+    results[p.slug] = await probe(p.liveUrl, retries, timeoutMs, opts.fetchImpl);
+  }
+  return applyResults({ projects, results, stateFile: opts.stateFile, today: opts.today, dryRun: opts.dryRun });
+}
+
 if (process.argv[1] && process.argv[1].endsWith("check-health.ts")) {
-  const dryRun = process.argv.includes("--dry-run");
-  runHealthCheck({
-    projectsDir: join(process.cwd(), "content/projects"),
-    stateFile: join(process.cwd(), "data/health-state.json"),
-    today: new Date().toISOString().slice(0, 10),
-    dryRun,
-  }).then((report) => {
-    console.log(JSON.stringify(report, null, 2));
-  });
+  const argv = process.argv.slice(2);
+  const dryRun = argv.includes("--dry-run");
+  const projectsDir = join(process.cwd(), "content/projects");
+  const stateFile = join(process.cwd(), "data/health-state.json");
+  const today = new Date().toISOString().slice(0, 10);
+
+  if (argv.includes("--list")) {
+    // Emit the projects + live URLs for the agent to check via WebFetch. No network.
+    console.log(JSON.stringify(readProjects(projectsDir), null, 2));
+  } else {
+    const applyIdx = argv.indexOf("--apply");
+    if (applyIdx !== -1) {
+      // Apply agent-gathered results: JSON file mapping slug -> "up" | "down".
+      const file = argv[applyIdx + 1];
+      const results = JSON.parse(readFileSync(file, "utf8")) as Record<string, "up" | "down">;
+      const report = applyResults({ projects: readProjects(projectsDir), results, stateFile, today, dryRun });
+      console.log(JSON.stringify(report, null, 2));
+    } else {
+      runHealthCheck({ projectsDir, stateFile, today, dryRun }).then((report) => {
+        console.log(JSON.stringify(report, null, 2));
+      });
+    }
+  }
 }
