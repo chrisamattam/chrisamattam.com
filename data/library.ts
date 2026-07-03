@@ -176,4 +176,5 @@ export const library: LibraryBook[] = [
   { title: "Rethinking Good Governance: Holding to Account India's Public Institutions", author: "Vinod Rai", acquired: "2023-03-16", format: "Physical", cover: "/images/books/rethinking-good-governance.jpg" },
   { title: "Seven Decades of Independent India", author: "Vinod Rai", acquired: "2023-03-16", format: "Physical", cover: "/images/books/seven-decades-of-independent-india.jpg" },
   { title: "Not Just an Accountant: The Diary of the Nation's Conscience Keeper", author: "Vinod Rai", acquired: "2023-03-16", format: "Physical", cover: "/images/books/not-just-an-accountant.jpg" },
+  { title: "CULTure at Zomato : How to Rewire Your Brain for Greatness", author: "Deepinder Goyal, Ashish Goel, Naina Sahni", acquired: "2026-07-03", format: "Physical", cover: "/images/books/culture-at-zomato-how-to-rewire-your-brain-for-greatness.jpg" },
 ];
