@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
-export const alt = "Chris Mattam — Product Manager building AI-native fintech products";
+export const alt = "Chris Mattam — Product manager and builder in fintech and AI";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -28,21 +28,32 @@ export default function OgImage() {
             </svg>
           </div>
           <div style={{ fontSize: 26, color: "#57544D", letterSpacing: "0.06em" }}>
-            BENGALURU · FINTECH · AI
+            PRODUCT · BUILDER · FINTECH · AI
           </div>
         </div>
 
-        <div
-          style={{
-            fontSize: 76,
-            fontWeight: 600,
-            color: "#2B2926",
-            lineHeight: 1.08,
-            letterSpacing: "-0.03em",
-            maxWidth: 980,
-          }}
-        >
-          Chris Mattam — a product manager building AI-native fintech products.
+        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+          <div
+            style={{
+              fontSize: 88,
+              fontWeight: 600,
+              color: "#2B2926",
+              lineHeight: 1.05,
+              letterSpacing: "-0.035em",
+            }}
+          >
+            Hi, I&apos;m Chris.
+          </div>
+          <div
+            style={{
+              fontSize: 34,
+              color: "#57544D",
+              lineHeight: 1.3,
+              maxWidth: 900,
+            }}
+          >
+            Product manager and builder, working on AI-native fintech products.
+          </div>
         </div>
 
         <div style={{ fontSize: 28, color: "#57544D" }}>chrisamattam.com</div>
