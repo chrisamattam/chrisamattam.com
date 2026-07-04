@@ -1,0 +1,33 @@
+---
+title: "Why does this website exist?"
+slug: "why-does-this-website-exist"
+date: "2026-07-04"
+summary: "A place to document what I'm learning from building products and companies — why I chose not to automate the writing, and the small agent framework that keeps the rest of the site current."
+tags: ["meta", "AI", "agents"]
+draft: false
+---
+
+Building this website has been a long-time goal of mine — a place to document what I'm learning from building products and companies, and a record I can look back on to see how far I've come.
+
+The biggest thing that kept me from starting was writer's block. I've always struggled with perfectionism, and at one point I considered just building an agentic workflow to publish blog posts consistently. I decided against it, for two reasons:
+
+1. **Taste.** I want to be intentional about what I write and share here. I don't want to publish for the sake of publishing — I'd rather share genuine learnings from my work, even if that means publishing less often.
+2. **AI is a means, not the end.** The end objective is sharing my learnings and ideas with the world. Agents make that easier, not automatic. Right now, agents handle the repetitive parts of running this site such as updating my reading list, pulling book covers, and so on. The content published to this site aims to be genuine learnings — still figuring out how AI can help in that.
+
+This article isn't perfect, and it doesn't need to be. My last startup taught me one thing above all: build, ship, gather feedback, and rebuild fast. Writing in a vacuum, with no feedback, is pointless. So my goal here is simply to publish something on this site every week.
+
+## How was this website built?
+
+Here's the machinery behind it, for the curious.
+
+The site was built with Claude Code and deployed on Vercel. It's split into four sections:
+
+- **Home** — a summary of what I've done and the projects that have shaped me.
+- **Writing** — this blog: learnings and lessons from building products and companies.
+- **Reading** — the books and audiobooks I'm currently working through.
+- **Work** — my projects, with live links, GitHub repos, and current status.
+
+A small agentic framework keeps the site up to date. One parent agent oversees two sub-agents:
+
+1. **Reading agent** — checks Gmail via the Google Workspace MCP for newly purchased books, confirms they're not already listed, pulls a cover from Google Books or Open Library, and verifies the cover actually matches the title. New books get passed to the parent agent, which opens a GitHub pull request for my review.
+2. **Uptime agent** — pings every project link to confirm it's still live and hasn't been retired.
