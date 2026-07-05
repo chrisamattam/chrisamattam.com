@@ -59,7 +59,33 @@ export const Post = defineDocumentType(() => ({
   },
 }));
 
+export const Hike = defineDocumentType(() => ({
+  name: "Hike",
+  filePathPattern: "hikes/*.mdx",
+  contentType: "mdx",
+  fields: {
+    id:            { type: "string", required: true },
+    name:          { type: "string", required: true },
+    range:         { type: "enum",   options: ["Himalaya", "Sahyadri"], required: true },
+    subRegion:     { type: "string", required: true },
+    lat:           { type: "number", required: true },
+    lng:           { type: "number", required: true },
+    year:          { type: "number", required: false },
+    visits:        { type: "number", required: true },
+    visitsLabel:   { type: "string", required: false }, // e.g. "12+" when the count is approximate
+    distance:      { type: "string", required: false },
+    elevationGain: { type: "string", required: false },
+    difficulty:    { type: "enum",   options: ["Easy", "Moderate", "Hard"], required: false },
+    photos:        { type: "list",   of: { type: "string" }, required: false },
+    heroImage:     { type: "string", required: false },
+    approxCoords:  { type: "boolean", required: false, default: false }, // village-level coords, verify before launch
+  },
+  computedFields: {
+    slug: { type: "string", resolve: (doc) => doc.id || doc._raw.sourceFileName.replace(/\.mdx$/, "") },
+  },
+}));
+
 export default makeSource({
   contentDirPath: "content",
-  documentTypes: [Milestone, Project, Post],
+  documentTypes: [Milestone, Project, Post, Hike],
 });

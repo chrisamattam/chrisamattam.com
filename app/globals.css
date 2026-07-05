@@ -230,3 +230,7 @@ html, body { overflow-x: clip; }
 @media (max-width: 600px) {
   .stack-mobile { flex-direction: column !important; align-items: flex-start !important; gap: 1rem !important; }
 }
+
+/* ── Hiking list rows ── */
+.hike-row { transition: opacity 140ms ease; }
+.hike-row:hover { opacity: 0.62; }
