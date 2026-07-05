@@ -8,9 +8,9 @@ export type GlobeController = {
   flyTo: (lat: number, lng: number, altitude?: number) => void;
 };
 
-const RANGE_COLOR: Record<HikePin["range"], string> = {
-  Himalaya: "#3B82F6",
-  Sahyadri: "#4E8A5E",
+const REGION_COLOR: Record<HikePin["region"], string> = {
+  himalaya: "#3B82F6",
+  sahyadri: "#4E8A5E",
 };
 
 // Tunables
@@ -31,21 +31,21 @@ function polar2Cartesian(lat: number, lng: number, alt = 0) {
 }
 
 // SVG shape strings — colour AND shape differ by region (colourblind-safe).
-function singleSvg(range: HikePin["range"]) {
-  const c = RANGE_COLOR[range];
-  return range === "Himalaya"
+function singleSvg(region: HikePin["region"]) {
+  const c = REGION_COLOR[region];
+  return region === "himalaya"
     ? `<svg width="18" height="16" viewBox="0 0 18 16"><path d="M9 2 L16.5 14 L1.5 14 Z" fill="${c}" stroke="#fff" stroke-width="2" stroke-linejoin="round"/></svg>`
     : `<svg width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="${c}" stroke="#fff" stroke-width="2"/></svg>`;
 }
-function badgeSvg(range: HikePin["range"], count: number) {
-  const c = RANGE_COLOR[range];
-  return range === "Himalaya"
+function badgeSvg(region: HikePin["region"], count: number) {
+  const c = REGION_COLOR[region];
+  return region === "himalaya"
     ? `<svg width="36" height="32" viewBox="0 0 36 32"><path d="M18 2 L34 29 L2 29 Z" fill="${c}" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><text x="18" y="23" text-anchor="middle" font-size="12" font-weight="700" fill="#fff" font-family="system-ui,-apple-system,sans-serif">${count}</text></svg>`
     : `<svg width="30" height="30" viewBox="0 0 30 30"><circle cx="15" cy="15" r="13" fill="${c}" stroke="#fff" stroke-width="2"/><text x="15" y="15" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="#fff" font-family="system-ui,-apple-system,sans-serif">${count}</text></svg>`;
 }
 
 type Proj = { x: number; y: number; visible: boolean };
-type Group = { id: string; members: string[]; range: HikePin["range"] };
+type Group = { id: string; members: string[]; region: HikePin["region"] };
 
 export default function HikingGlobe({
   pins,
@@ -103,9 +103,9 @@ export default function HikingGlobe({
       wrap.style.cssText = `position:absolute;left:0;top:0;width:${TOUCH}px;height:${TOUCH}px;display:none;align-items:center;justify-content:center;pointer-events:auto;cursor:pointer`;
       const shape = document.createElement("div");
       shape.style.cssText = "transition:transform 140ms ease;display:flex";
-      shape.innerHTML = singleSvg(p.range);
+      shape.innerHTML = singleSvg(p.region);
       wrap.appendChild(shape);
-      wrap.title = `${p.name} — ${p.subRegion}`;
+      wrap.title = `${p.name} — ${p.area}, ${p.state}`;
       wrap.addEventListener("mouseenter", () => (shape.style.transform = "scale(1.45)"));
       wrap.addEventListener("mouseleave", () => (shape.style.transform = "scale(1)"));
       wrap.addEventListener("click", (e) => {
@@ -119,7 +119,7 @@ export default function HikingGlobe({
 
     // Dynamic badge elements, keyed by cluster id.
     const badgeEls = new Map<string, HTMLDivElement>();
-    const getBadge = (id: string, range: HikePin["range"], count: number): HTMLDivElement => {
+    const getBadge = (id: string, region: HikePin["region"], count: number): HTMLDivElement => {
       let b = badgeEls.get(id);
       if (!b) {
         b = document.createElement("div");
@@ -128,7 +128,7 @@ export default function HikingGlobe({
         badgeEls.set(id, b);
       }
       b.dataset.count = String(count);
-      b.innerHTML = badgeSvg(range, count);
+      b.innerHTML = badgeSvg(region, count);
       return b;
     };
 
@@ -194,7 +194,7 @@ export default function HikingGlobe({
           }
         }
         members.sort();
-        out.push({ id: members.join("|"), members, range: p.range });
+        out.push({ id: members.join("|"), members, region: p.region });
       }
       // Drop badge DOM for clusters that no longer exist.
       const live = new Set(out.filter((g) => g.members.length > 1).map((g) => g.id));
@@ -261,11 +261,11 @@ export default function HikingGlobe({
             const my = cy + Math.sin(ang) * radius * eased;
             w.style.display = "flex";
             w.style.transform = `translate(${mx - TOUCH / 2}px, ${my - TOUCH / 2}px)`;
-            leaders += `<line x1="${cx}" y1="${cy}" x2="${mx}" y2="${my}" stroke="${RANGE_COLOR[g.range]}" stroke-width="1" stroke-opacity="${0.4 * eased}"/>`;
+            leaders += `<line x1="${cx}" y1="${cy}" x2="${mx}" y2="${my}" stroke="${REGION_COLOR[g.region]}" stroke-width="1" stroke-opacity="${0.4 * eased}"/>`;
           });
         } else {
           // Collapsed cluster → badge.
-          const b = getBadge(g.id, g.range, g.members.length);
+          const b = getBadge(g.id, g.region, g.members.length);
           b.style.display = "flex";
           b.style.transform = `translate(${cx - TOUCH / 2}px, ${cy - TOUCH / 2}px)`;
           b.onclick = (e) => {

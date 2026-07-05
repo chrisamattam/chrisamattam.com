@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type NavChild = { href: string; label: string };
 type NavItem = { href: string; label: string; children?: NavChild[] };
@@ -103,6 +103,7 @@ export default function Nav() {
   const [mounted, setMounted] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [hobbiesOpen, setHobbiesOpen] = useState(false);
+  const hobbiesRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => setMounted(true), []);
 
@@ -111,6 +112,24 @@ export default function Nav() {
     setMenuOpen(false);
     setHobbiesOpen(false);
   }, [pathname]);
+
+  // Click-only dropdown: close on outside click or Escape (no hover, to avoid
+  // the gap-dead-zone where moving toward the items closed the menu).
+  useEffect(() => {
+    if (!hobbiesOpen) return;
+    const onDown = (e: MouseEvent) => {
+      if (hobbiesRef.current && !hobbiesRef.current.contains(e.target as Node)) setHobbiesOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setHobbiesOpen(false);
+    };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [hobbiesOpen]);
 
   // Full-bleed pages (the hiking globe) span the viewport, so the nav should too —
   // otherwise the logo sits inside the centered container and misaligns with content.
@@ -223,9 +242,8 @@ export default function Nav() {
               return (
                 <div
                   key={link.label}
+                  ref={hobbiesRef}
                   style={{ position: "relative" }}
-                  onMouseEnter={() => setHobbiesOpen(true)}
-                  onMouseLeave={() => setHobbiesOpen(false)}
                 >
                   <button
                     aria-haspopup="true"
