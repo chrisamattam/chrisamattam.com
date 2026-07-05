@@ -2,7 +2,7 @@ import { allHikes } from "contentlayer/generated";
 
 export type Hike = (typeof allHikes)[number];
 
-/** Minimal, fully-serializable shape passed to the client globe. */
+/** Minimal, fully-serializable shape passed to the client globe + list. */
 export type HikePin = {
   id: string;
   slug: string;
@@ -12,6 +12,7 @@ export type HikePin = {
   lat: number;
   lng: number;
   visits: number;
+  visitsLabel?: string;
 };
 
 /** All hikes, ordered Himalaya-first, then by visit count, then name. */
@@ -38,5 +39,6 @@ export function getHikePins(): HikePin[] {
     lat: h.lat,
     lng: h.lng,
     visits: h.visits,
+    visitsLabel: h.visitsLabel,
   }));
 }

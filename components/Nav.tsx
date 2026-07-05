@@ -112,6 +112,10 @@ export default function Nav() {
     setHobbiesOpen(false);
   }, [pathname]);
 
+  // Full-bleed pages (the hiking globe) span the viewport, so the nav should too —
+  // otherwise the logo sits inside the centered container and misaligns with content.
+  const fullBleed = pathname === "/hiking";
+
   const isItemActive = (item: NavItem) => {
     if (item.children) return item.children.some((c) => pathname === c.href || pathname.startsWith(c.href + "/"));
     return pathname === item.href || pathname.startsWith(item.href + "/");
@@ -180,13 +184,16 @@ export default function Nav() {
       }}
     >
       <div
-        className="container-page"
+        className={fullBleed ? undefined : "container-page"}
         style={{
           height: "100%",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
           gap: "1.5rem",
+          // On full-bleed pages (e.g. /hiking) match the content's edge padding
+          // so the logo lines up with the page content instead of the centered container.
+          ...(fullBleed ? { width: "100%", paddingInline: "clamp(1.5rem, 3vw, 2.25rem)" } : null),
         }}
       >
         {/* Logo */}

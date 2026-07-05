@@ -234,3 +234,41 @@ html, body { overflow-x: clip; }
 /* ── Hiking list rows ── */
 .hike-row { transition: opacity 140ms ease; }
 .hike-row:hover { opacity: 0.62; }
+
+/* ── Hiking explorer: track list beside the globe ── */
+.hiking-explorer {
+  display: flex;
+  height: calc(100dvh - 58px);
+  min-height: 520px;
+}
+.hiking-list {
+  flex: 0 0 320px;
+  overflow-y: auto;
+  border-right: 1px solid var(--border-subtle);
+  background: var(--surface-page);
+  padding-bottom: 2rem;
+}
+.hiking-globe-pane {
+  flex: 1 1 auto;
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+}
+.hiking-track {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0.6rem 0.7rem;
+  margin: 0 -0.7rem;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  transition: background 140ms ease;
+}
+.hiking-track:hover { background: var(--surface-subtle); }
+
+@media (max-width: 820px) {
+  /* Globe on top (2nd in DOM), list below */
+  .hiking-explorer { flex-direction: column-reverse; height: auto; min-height: 0; }
+  .hiking-list { flex: none; border-right: none; overflow-y: visible; }
+  .hiking-globe-pane { height: 50vh; min-height: 340px; }
+}
