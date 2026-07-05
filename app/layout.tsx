@@ -3,6 +3,7 @@ import { Hanken_Grotesk, JetBrains_Mono, Outfit } from "next/font/google";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import CustomCursor from "@/components/CustomCursor";
 import "./globals.css";
 
 const hanken = Hanken_Grotesk({
@@ -72,6 +73,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head />
       <body suppressHydrationWarning>
         <ThemeProvider attribute="data-theme" defaultTheme="light" enableSystem={false}>
+          <CustomCursor />
           {children}
         </ThemeProvider>
         <Analytics />

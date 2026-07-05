@@ -272,3 +272,13 @@ html, body { overflow-x: clip; }
   .hiking-list { flex: none; border-right: none; overflow-y: visible; }
   .hiking-globe-pane { height: 50vh; min-height: 340px; }
 }
+
+/* Custom cursor — hide native pointer only when the crosshair is active
+   (desktop/fine-pointer). Keep the text caret inside form fields. */
+@media (pointer: fine) {
+  html.custom-cursor,
+  html.custom-cursor * { cursor: none; }
+  html.custom-cursor input,
+  html.custom-cursor textarea,
+  html.custom-cursor [contenteditable="true"] { cursor: text; }
+}
