@@ -84,7 +84,8 @@ export async function POST(req: NextRequest) {
       stream: true,
       messages: [{ role: "system", content: system }, ...history, { role: "user", content: message }],
     });
-  } catch {
+  } catch (err) {
+    console.error("[chat] LLM error:", err instanceof Error ? err.message : err);
     return textStream(CANNED.error);
   }
 

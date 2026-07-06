@@ -71,11 +71,15 @@ for (const file of listMdx("content/hikes")) {
   add("Journey & experience", "/", "Career and education timeline", lines.join("\n"));
 }
 
-// ── Reading → /reading (titles/authors only; image paths stripped) ──
+// ── Reading → /reading (compact: keeps the corpus within tight free-tier
+//    per-minute token limits; the full list with covers lives on the page) ──
 {
-  const lines = library.map((b) => `- ${b.title} — ${b.author} (${b.format})`);
+  const authors = Array.from(new Set(library.map((b) => b.author)));
   raw.push(JSON.stringify(library.map((b) => [b.title, b.author, b.format])));
-  add("Reading → Library", "/reading", `${library.length} books`, lines.join("\n"));
+  const body =
+    `Chris has logged ${library.length} books (Kindle, Audible, and physical) — the full list with covers is on the reading page. ` +
+    `A sample of authors he's read: ${authors.slice(0, 30).join(", ")}.`;
+  add("Reading → Library", "/reading", `${library.length} books`, body);
 }
 
 // ── Assemble ──
