@@ -14,6 +14,8 @@ export interface KeeperConfig {
   liveLinkTimeoutMs: number;
   coverSourcesOrder: string[];
   purchaseSources: PurchaseSource[];
+  /** Compiled site-knowledge doc must stay under this (chatbot corpus budget). */
+  knowledgeTokenBudget: number;
 }
 
 export const config: KeeperConfig = {
@@ -21,6 +23,7 @@ export const config: KeeperConfig = {
   downtimeThresholdDays: 7,
   liveLinkRetries: 3,
   liveLinkTimeoutMs: 10000,
+  knowledgeTokenBudget: 25000,
   coverSourcesOrder: ["google-books", "itunes", "open-library", "duckduckgo"],
   purchaseSources: [
     {

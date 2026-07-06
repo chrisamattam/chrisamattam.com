@@ -4,10 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev --webpack",
+    "prebuild": "tsx automation/compile-knowledge.ts",
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
+    "compile-knowledge": "tsx automation/compile-knowledge.ts",
     "keeper:health": "tsx automation/check-health.ts",
     "keeper:add-book": "tsx automation/add-book.ts"
   },
