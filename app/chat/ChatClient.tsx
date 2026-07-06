@@ -14,7 +14,9 @@ const OPENER: Msg = {
 };
 
 // Render inline [text](/path) links (internal → Next Link) and plain text.
-function renderContent(text: string) {
+function renderContent(raw: string) {
+  // Drop a trailing, truncated markdown link (e.g. streaming cut off mid-link).
+  const text = raw.replace(/\[[^\]]*\]\([^)]*$/, "").replace(/\[[^\]]*$/, "");
   const parts: React.ReactNode[] = [];
   const re = /\[([^\]]+)\]\((\/[^)]*)\)/g;
   let last = 0;
@@ -22,9 +24,11 @@ function renderContent(text: string) {
   let i = 0;
   while ((m = re.exec(text))) {
     if (m.index > last) parts.push(text.slice(last, m.index));
+    // If the model used the raw path as the label, show a cleaner name.
+    const label = m[1].startsWith("/") ? m[1].split("/").filter(Boolean).pop() ?? m[1] : m[1];
     parts.push(
       <Link key={i++} href={m[2]} style={{ color: "var(--text-link)", textUnderlineOffset: 3 }}>
-        {m[1]}
+        {label}
       </Link>
     );
     last = m.index + m[0].length;

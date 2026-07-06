@@ -6,7 +6,7 @@ import { buildSystemPrompt } from "@/lib/chatPrompt";
 export const runtime = "nodejs";
 
 const MAX_MESSAGE = 1000;
-const MAX_TOKENS = 700;
+const MAX_TOKENS = 800;
 const MAX_HISTORY = 20;
 
 // Best-effort in-memory guards (v1). Real persistence + the spend/turn ledger
