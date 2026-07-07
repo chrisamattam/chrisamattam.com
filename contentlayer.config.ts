@@ -1,4 +1,4 @@
-import { defineDocumentType, makeSource } from "contentlayer2/source-files";
+import { defineDocumentType, defineNestedType, makeSource } from "contentlayer2/source-files";
 
 export const Milestone = defineDocumentType(() => ({
   name: "Milestone",
@@ -59,7 +59,66 @@ export const Post = defineDocumentType(() => ({
   },
 }));
 
+const Location = defineNestedType(() => ({
+  name: "Location",
+  fields: {
+    area:  { type: "string", required: true },
+    state: { type: "string", required: true },
+  },
+}));
+
+const Coordinates = defineNestedType(() => ({
+  name: "Coordinates",
+  fields: {
+    lat: { type: "number", required: true },
+    lng: { type: "number", required: true },
+  },
+}));
+
+const PracticalNotes = defineNestedType(() => ({
+  name: "PracticalNotes",
+  fields: {
+    bestSeason:          { type: "string", required: false },
+    gearNotes:           { type: "string", required: false },
+    warnings:            { type: "string", required: false },
+    whatIdDoDifferently: { type: "string", required: false },
+  },
+}));
+
+export const Hike = defineDocumentType(() => ({
+  name: "Hike",
+  filePathPattern: "hikes/*.mdx",
+  contentType: "mdx",
+  fields: {
+    id:                  { type: "string",  required: true },  // flat slug, e.g. "gaumukh-glacier"
+    name:                { type: "string",  required: true },
+    region:              { type: "enum",    options: ["himalaya", "sahyadri"], required: true },
+    location:            { type: "nested",  of: Location, required: true },
+    coordinates:         { type: "nested",  of: Coordinates, required: true },
+    startDate:           { type: "string",  required: false }, // "2022" or "2022-07-15"
+    endDate:             { type: "string",  required: false }, // set for multi-day treks
+    durationHours:       { type: "number",  required: false }, // single-day
+    durationDays:        { type: "number",  required: false }, // multi-day
+    difficulty:          { type: "enum",    options: ["easy", "moderate", "hard", "strenuous"], required: false },
+    elevationGainMeters: { type: "number",  required: false },
+    distanceKm:          { type: "number",  required: false },
+    companions:          { type: "string",  required: false }, // "solo", "with college friends"
+    visits:              { type: "number",  required: true },
+    visitsLabel:         { type: "string",  required: false }, // "12+" when the count is approximate
+    hook:                { type: "string",  required: true },  // one-line teaser (previews, popups, meta description)
+    practicalNotes:      { type: "nested",  of: PracticalNotes, required: false },
+    heroImage:           { type: "string",  required: false }, // optional override; folder hero used otherwise
+    curatedPhotos:       { type: "boolean", required: false, default: false }, // photos placed inline in the MDX; skip the auto-gallery
+    draft:               { type: "boolean", required: false, default: false },
+    statsContribution:   { type: "boolean", required: false, default: true }, // counts toward aggregate stats
+    approxCoords:        { type: "boolean", required: false, default: false }, // village-level coords, verify before launch
+  },
+  computedFields: {
+    slug: { type: "string", resolve: (doc) => doc.id || doc._raw.sourceFileName.replace(/\.mdx$/, "") },
+  },
+}));
+
 export default makeSource({
   contentDirPath: "content",
-  documentTypes: [Milestone, Project, Post],
+  documentTypes: [Milestone, Project, Post, Hike],
 });

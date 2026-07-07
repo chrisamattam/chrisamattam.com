@@ -3,13 +3,24 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-const navLinks = [
-  { href: "/",         label: "Home"     },
-  { href: "/work",     label: "Work"     },
-  { href: "/writing",  label: "Writing"  },
-  { href: "/reading",  label: "Reading"  },
+type NavChild = { href: string; label: string };
+type NavItem = { href: string; label: string; children?: NavChild[] };
+
+const navLinks: NavItem[] = [
+  { href: "/",        label: "Home"    },
+  { href: "/work",    label: "Work"    },
+  { href: "/writing", label: "Writing" },
+  {
+    href: "/reading",
+    label: "Hobbies",
+    children: [
+      { href: "/reading", label: "Reading" },
+      { href: "/hiking",  label: "Hiking"  },
+      { href: "/running", label: "Running" },
+    ],
+  },
 ];
 
 function SunIcon() {
@@ -59,6 +70,14 @@ function LogoMark() {
   );
 }
 
+function ChevronDown() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ marginTop: 1 }}>
+      <path d="m6 9 6 6 6-6" />
+    </svg>
+  );
+}
+
 function BurgerIcon({ open }: { open: boolean }) {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" aria-hidden="true">
@@ -83,11 +102,43 @@ export default function Nav() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [hobbiesOpen, setHobbiesOpen] = useState(false);
+  const hobbiesRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => setMounted(true), []);
 
-  // Close the mobile menu whenever the route changes
-  useEffect(() => setMenuOpen(false), [pathname]);
+  // Close menus whenever the route changes
+  useEffect(() => {
+    setMenuOpen(false);
+    setHobbiesOpen(false);
+  }, [pathname]);
+
+  // Click-only dropdown: close on outside click or Escape (no hover, to avoid
+  // the gap-dead-zone where moving toward the items closed the menu).
+  useEffect(() => {
+    if (!hobbiesOpen) return;
+    const onDown = (e: MouseEvent) => {
+      if (hobbiesRef.current && !hobbiesRef.current.contains(e.target as Node)) setHobbiesOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setHobbiesOpen(false);
+    };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [hobbiesOpen]);
+
+  // Full-bleed pages (the hiking globe) span the viewport, so the nav should too —
+  // otherwise the logo sits inside the centered container and misaligns with content.
+  const fullBleed = pathname === "/hiking";
+
+  const isItemActive = (item: NavItem) => {
+    if (item.children) return item.children.some((c) => pathname === c.href || pathname.startsWith(c.href + "/"));
+    return pathname === item.href || pathname.startsWith(item.href + "/");
+  };
 
   const isDark = theme === "dark";
 
@@ -152,13 +203,16 @@ export default function Nav() {
       }}
     >
       <div
-        className="container-page"
+        className={fullBleed ? undefined : "container-page"}
         style={{
           height: "100%",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
           gap: "1.5rem",
+          // On full-bleed pages (e.g. /hiking) match the content's edge padding
+          // so the logo lines up with the page content instead of the centered container.
+          ...(fullBleed ? { width: "100%", paddingInline: "clamp(1.5rem, 3vw, 2.25rem)" } : null),
         }}
       >
         {/* Logo */}
@@ -181,7 +235,99 @@ export default function Nav() {
         {/* Desktop links + toggle */}
         <div className="nav-desktop">
           {navLinks.map((link) => {
-            const isActive = pathname === link.href || pathname.startsWith(link.href + "/");
+            const isActive = isItemActive(link);
+
+            // Dropdown item (Hobbies)
+            if (link.children) {
+              return (
+                <div
+                  key={link.label}
+                  ref={hobbiesRef}
+                  style={{ position: "relative" }}
+                >
+                  <button
+                    aria-haspopup="true"
+                    aria-expanded={hobbiesOpen}
+                    onClick={() => setHobbiesOpen((v) => !v)}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "0.3rem",
+                      fontSize: 14,
+                      fontFamily: "inherit",
+                      color: isActive || hobbiesOpen ? "var(--text-primary)" : "var(--text-secondary)",
+                      background: "transparent",
+                      border: "none",
+                      cursor: "pointer",
+                      padding: "0.375rem 0.75rem",
+                      borderRadius: "var(--radius-sm)",
+                      transition: "color 160ms ease",
+                      fontWeight: isActive ? 500 : 400,
+                    }}
+                  >
+                    {link.label}
+                    <span style={{ transform: hobbiesOpen ? "rotate(180deg)" : "none", transition: "transform 180ms ease", display: "inline-flex" }}>
+                      <ChevronDown />
+                    </span>
+                  </button>
+
+                  {hobbiesOpen && (
+                    <div
+                      role="menu"
+                      style={{
+                        position: "absolute",
+                        top: "100%",
+                        left: 0,
+                        marginTop: 6,
+                        minWidth: 168,
+                        padding: "0.375rem",
+                        display: "flex",
+                        flexDirection: "column",
+                        background: "color-mix(in srgb, var(--surface-page) 97%, transparent)",
+                        backdropFilter: "saturate(180%) blur(20px)",
+                        WebkitBackdropFilter: "saturate(180%) blur(20px)",
+                        border: "1px solid var(--border-subtle)",
+                        borderRadius: "var(--radius-md, 12px)",
+                        boxShadow: "0 14px 32px -18px rgba(0,0,0,0.4)",
+                        zIndex: 50,
+                      }}
+                    >
+                      {link.children.map((child) => {
+                        const childActive = pathname === child.href || pathname.startsWith(child.href + "/");
+                        return (
+                          <Link
+                            key={child.href}
+                            href={child.href}
+                            role="menuitem"
+                            style={{
+                              fontSize: 14,
+                              color: childActive ? "var(--text-primary)" : "var(--text-secondary)",
+                              textDecoration: "none",
+                              padding: "0.5rem 0.65rem",
+                              borderRadius: "var(--radius-sm)",
+                              fontWeight: childActive ? 500 : 400,
+                              transition: "background 140ms ease, color 140ms ease",
+                            }}
+                            onMouseEnter={(e) => {
+                              (e.currentTarget as HTMLAnchorElement).style.background = "var(--surface-subtle)";
+                              (e.currentTarget as HTMLAnchorElement).style.color = "var(--text-primary)";
+                            }}
+                            onMouseLeave={(e) => {
+                              (e.currentTarget as HTMLAnchorElement).style.background = "transparent";
+                              if (!childActive) (e.currentTarget as HTMLAnchorElement).style.color = "var(--text-secondary)";
+                            }}
+                          >
+                            {child.label}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
+            // Simple link
             return (
               <Link
                 key={link.href}
@@ -238,6 +384,42 @@ export default function Nav() {
       {/* Mobile dropdown panel */}
       <div className={`nav-panel${menuOpen ? " open" : ""}`}>
         {navLinks.map((link) => {
+          if (link.children) {
+            return (
+              <div key={link.label}>
+                <div
+                  className="nav-panel-link"
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 11,
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                    color: "var(--text-muted)",
+                  }}
+                >
+                  {link.label}
+                </div>
+                {link.children.map((child) => {
+                  const childActive = pathname === child.href || pathname.startsWith(child.href + "/");
+                  return (
+                    <Link
+                      key={child.href}
+                      href={child.href}
+                      className="nav-panel-link"
+                      style={{
+                        paddingLeft: "calc(var(--gutter) + 1rem)",
+                        color: childActive ? "var(--text-primary)" : "var(--text-secondary)",
+                        fontWeight: childActive ? 500 : 400,
+                      }}
+                    >
+                      {child.label}
+                    </Link>
+                  );
+                })}
+              </div>
+            );
+          }
+
           const isActive = pathname === link.href || pathname.startsWith(link.href + "/");
           return (
             <Link
