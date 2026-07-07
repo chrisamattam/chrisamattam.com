@@ -66,7 +66,7 @@ export default function HikingGlobe({
     const pinBySlug = new Map(pins.map((p) => [p.slug, p]));
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const world = new (Globe as any)(el, { animateIn: true })
+    const world = new (Globe as any)(el, { animateIn: false })
       .backgroundColor("rgba(0,0,0,0)")
       .globeImageUrl("/textures/earth-blue-marble.jpg")
       .bumpImageUrl("/textures/earth-topology.png")
@@ -106,13 +106,7 @@ export default function HikingGlobe({
       shape.innerHTML = singleSvg(p.region);
       wrap.appendChild(shape);
       wrap.title = `${p.name} — ${p.area}, ${p.state}`;
-      wrap.addEventListener("mouseenter", () => (shape.style.transform = "scale(1.45)"));
-      wrap.addEventListener("mouseleave", () => (shape.style.transform = "scale(1)"));
-      wrap.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const pin = pinBySlug.get(p.slug);
-        if (pin) onOpenRef.current(pin);
-      });
+      // Clicks are handled by the container hit-test (canvas swallows DOM clicks).
       overlay.appendChild(wrap);
       markerEls.set(p.slug, wrap);
     }
@@ -139,6 +133,10 @@ export default function HikingGlobe({
     let groups: Group[] = [];
     let lastCluster = 0;
     let lastFrame = performance.now();
+    // Screen positions of what's currently drawn, for our own hit-testing —
+    // globe.gl's canvas swallows pointer events, so DOM element clicks don't fire.
+    let badgeHits: { id: string; x: number; y: number }[] = [];
+    let markerHits: { slug: string; x: number; y: number }[] = [];
 
     const setOpen = (id: string) => {
       if (openId === id && openTarget) {
@@ -152,8 +150,28 @@ export default function HikingGlobe({
       openTarget = false;
     };
 
-    // Click on empty globe / canvas collapses (marker & badge clicks stopPropagation).
-    el.addEventListener("click", closeSpider);
+    // We hit-test clicks ourselves against the tracked positions (the canvas
+    // intercepts pointer events, so the DOM badges/markers never get the click).
+    el.addEventListener("click", (e) => {
+      const rect = el.getBoundingClientRect();
+      const px = e.clientX - rect.left;
+      const py = e.clientY - rect.top;
+      const near = (a: { x: number; y: number }, r: number) =>
+        (a.x - px) ** 2 + (a.y - py) ** 2 <= r * r;
+      // Badges first, then markers (both use generous radii for easy clicking).
+      const badge = badgeHits.find((b) => near(b, 30));
+      if (badge) {
+        setOpen(badge.id);
+        return;
+      }
+      const marker = markerHits.find((m) => near(m, 26));
+      if (marker) {
+        const pin = pinBySlug.get(marker.slug);
+        if (pin) onOpenRef.current(pin);
+        return;
+      }
+      closeSpider();
+    });
     // Any drag/rotate collapses immediately + pauses auto-rotate.
     controls.addEventListener("start", () => {
       controls.autoRotate = false;
@@ -229,6 +247,8 @@ export default function HikingGlobe({
       for (const w of markerEls.values()) w.style.display = "none";
       for (const b of badgeEls.values()) b.style.display = "none";
       let leaders = "";
+      badgeHits = [];
+      markerHits = [];
 
       for (const g of groups) {
         const visMembers = g.members.filter((s) => proj.get(s)?.visible);
@@ -249,6 +269,7 @@ export default function HikingGlobe({
           const w = markerEls.get(s)!;
           w.style.display = "flex";
           w.style.transform = `translate(${pr.x - TOUCH / 2}px, ${pr.y - TOUCH / 2}px)`;
+          markerHits.push({ slug: s, x: pr.x, y: pr.y });
         } else if (g.id === openId && prog > 0) {
           // Spiderfied: fan members around the live centroid.
           const n = g.members.length;
@@ -261,6 +282,7 @@ export default function HikingGlobe({
             const my = cy + Math.sin(ang) * radius * eased;
             w.style.display = "flex";
             w.style.transform = `translate(${mx - TOUCH / 2}px, ${my - TOUCH / 2}px)`;
+            markerHits.push({ slug: s, x: mx, y: my });
             leaders += `<line x1="${cx}" y1="${cy}" x2="${mx}" y2="${my}" stroke="${REGION_COLOR[g.region]}" stroke-width="1" stroke-opacity="${0.4 * eased}"/>`;
           });
         } else {
@@ -268,10 +290,7 @@ export default function HikingGlobe({
           const b = getBadge(g.id, g.region, g.members.length);
           b.style.display = "flex";
           b.style.transform = `translate(${cx - TOUCH / 2}px, ${cy - TOUCH / 2}px)`;
-          b.onclick = (e) => {
-            e.stopPropagation();
-            setOpen(g.id);
-          };
+          badgeHits.push({ id: g.id, x: cx, y: cy });
         }
       }
 

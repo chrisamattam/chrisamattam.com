@@ -108,6 +108,7 @@ export const Hike = defineDocumentType(() => ({
     hook:                { type: "string",  required: true },  // one-line teaser (previews, popups, meta description)
     practicalNotes:      { type: "nested",  of: PracticalNotes, required: false },
     heroImage:           { type: "string",  required: false }, // optional override; folder hero used otherwise
+    curatedPhotos:       { type: "boolean", required: false, default: false }, // photos placed inline in the MDX; skip the auto-gallery
     draft:               { type: "boolean", required: false, default: false },
     statsContribution:   { type: "boolean", required: false, default: true }, // counts toward aggregate stats
     approxCoords:        { type: "boolean", required: false, default: false }, // village-level coords, verify before launch

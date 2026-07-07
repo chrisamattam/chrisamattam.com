@@ -65,7 +65,7 @@ export default async function HikeStandalonePage({ params }: { params: Promise<{
               <span style={{ color: "var(--text-secondary)" }}>{hike.name}</span>
             </nav>
 
-            <HikeDetail hike={hike} heroImage={heroImage} photos={photos} />
+            <HikeDetail hike={hike} heroImage={heroImage} photos={hike.curatedPhotos ? [] : photos} />
 
             {/* Prev / next within the same region */}
             {(prev || next) && (
