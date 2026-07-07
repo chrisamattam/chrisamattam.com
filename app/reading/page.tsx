@@ -6,7 +6,7 @@ import { library, type LibraryBook } from "@/data/library";
 
 export const metadata = {
   title: "Reading",
-  description: "A library of 168 books across Kindle, Audible, and physical shelves.",
+  description: "A library of 169 books across Kindle, Audible, and physical shelves.",
 };
 
 const formatTone: Record<string, string> = {
