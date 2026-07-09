@@ -60,27 +60,82 @@ The north star metric for this product: runs correctly added to the website.
 2. Building a Strava data pipeline to Google Sheets using Make.com or similar
 3. AI Agent which can read data from Google Health
 
-| Solution | Trade Offs | How will it work? |
-|---|---|---|
-| Strava Widgets | Lack of privacy. Exposing data to the public vs. tracking less data to preserve privacy. | Code to embed the widgets provided by Strava in account settings. |
-| Make.com | Multiple points of failure in the automation pipeline. Boring — what are we in 2015? | Create a data pipeline automation through Make.com, send Strava data to a Google Sheet, build a Python workflow to update the website. |
-| AI Agent (Google Health) | Token utilization. Data can only be updated monthly. | Create an AI agent and connect it to the Google MCP server. Schedule monthly Takeouts sent to Gmail. Agent reads Gmail through the MCP, finds the email with Google Health takeout data and reads it. The agent opens a PR to update the website with the monthly run data. |
+<table>
+  <thead>
+    <tr><th>Solution</th><th>Trade Offs</th><th>How will it work?</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Strava Widgets</td>
+      <td>Lack of privacy. Exposing data to the public vs. tracking less data to preserve privacy.</td>
+      <td>Code to embed the widgets provided by Strava in account settings.</td>
+    </tr>
+    <tr>
+      <td>Make.com</td>
+      <td>Multiple points of failure in the automation pipeline. Boring — what are we in 2015?</td>
+      <td>Create a data pipeline automation through Make.com, send Strava data to a Google Sheet, build a Python workflow to update the website.</td>
+    </tr>
+    <tr>
+      <td>AI Agent (Google Health)</td>
+      <td>Token utilization. Data can only be updated monthly.</td>
+      <td>Create an AI agent and connect it to the Google MCP server. Schedule monthly Takeouts sent to Gmail. Agent reads Gmail through the MCP, finds the email with Google Health takeout data and reads it. The agent opens a PR to update the website with the monthly run data.</td>
+    </tr>
+  </tbody>
+</table>
 
 ## What needs to be part of the run data?
 
 The following data needs to be extracted from the Google Takeout data as part of the monthly runs summary, along with the month name:
 
-| Data from Google Health | Mapped to on the Website | Comments |
-|---|---|---|
-| `SUM(distance)` across Run entries where `distance != null` and `pace != null`, `startTime` in target month | Distance Chris ran last month | `distanceUnit` = Kilometer. Runs missing distance/pace are excluded entirely, not just from this metric. |
-| `MEDIAN(pace)` across the same filtered set, converted sec/km → min:sec/km | Median Pace of Run | `pace` is Fitbit's precomputed `activeDuration ÷ distance` — already excludes paused time. |
-| `COUNT()` of the same filtered set | Number of Runs last month | Only counts runs with both distance and pace recorded — GPS-less auto-detected runs are dropped. |
-| `SUM(activeDuration)` across the same filtered set, ms → hh:mm | Total time Chris ran last month | Uses `activeDuration`, not `duration` — `duration` includes paused/stopped time and would inflate the total. |
+<table>
+  <thead>
+    <tr><th>Data from Google Health</th><th>Mapped to on the Website</th><th>Comments</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>SUM(distance)</code> across Run entries where <code>distance != null</code> and <code>pace != null</code>, <code>startTime</code> in target month</td>
+      <td>Distance Chris ran last month</td>
+      <td><code>distanceUnit</code> = Kilometer. Runs missing distance/pace are excluded entirely, not just from this metric.</td>
+    </tr>
+    <tr>
+      <td><code>MEDIAN(pace)</code> across the same filtered set, converted sec/km → min:sec/km</td>
+      <td>Median Pace of Run</td>
+      <td><code>pace</code> is Fitbit's precomputed <code>activeDuration ÷ distance</code> — already excludes paused time.</td>
+    </tr>
+    <tr>
+      <td><code>COUNT()</code> of the same filtered set</td>
+      <td>Number of Runs last month</td>
+      <td>Only counts runs with both distance and pace recorded — GPS-less auto-detected runs are dropped.</td>
+    </tr>
+    <tr>
+      <td><code>SUM(activeDuration)</code> across the same filtered set, ms → hh:mm</td>
+      <td>Total time Chris ran last month</td>
+      <td>Uses <code>activeDuration</code>, not <code>duration</code> — <code>duration</code> includes paused/stopped time and would inflate the total.</td>
+    </tr>
+  </tbody>
+</table>
 
 The following data needs to be extracted from each individual run of the month:
 
-| Data from Google Health | Mapped to on the Website | Comments |
-|---|---|---|
-| `distance` (+ `distanceUnit`) | Distance Covered | Entry excluded from the site entirely if this is null — no blank/placeholder shown. |
-| `pace`, converted sec/km → min:sec/km | Pace of the Run | Verified `pace = 3600 / speed`; both already exclude paused time. |
-| `activeDuration`, ms → mm:ss | Time of the Run | Not `duration` (elapsed, includes pauses) — `activeDuration` is true moving time and is the value Fitbit used to compute `pace`, so time and pace stay consistent. |
+<table>
+  <thead>
+    <tr><th>Data from Google Health</th><th>Mapped to on the Website</th><th>Comments</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>distance</code> (+ <code>distanceUnit</code>)</td>
+      <td>Distance Covered</td>
+      <td>Entry excluded from the site entirely if this is null — no blank/placeholder shown.</td>
+    </tr>
+    <tr>
+      <td><code>pace</code>, converted sec/km → min:sec/km</td>
+      <td>Pace of the Run</td>
+      <td>Verified <code>pace = 3600 / speed</code>; both already exclude paused time.</td>
+    </tr>
+    <tr>
+      <td><code>activeDuration</code>, ms → mm:ss</td>
+      <td>Time of the Run</td>
+      <td>Not <code>duration</code> (elapsed, includes pauses) — <code>activeDuration</code> is true moving time and is the value Fitbit used to compute <code>pace</code>, so time and pace stay consistent.</td>
+    </tr>
+  </tbody>
+</table>
