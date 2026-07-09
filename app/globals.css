@@ -152,6 +152,31 @@ canvas { background: transparent; }
   border-radius: var(--radius-xs);
   padding: 0.1em 0.35em;
 }
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9em;
+  margin: 1.75rem 0;
+  overflow-x: auto;
+  display: block;
+}
+.prose th, .prose td {
+  text-align: left;
+  padding: 0.6rem 0.85rem;
+  border: 1px solid var(--border-subtle);
+  vertical-align: top;
+  line-height: 1.55;
+}
+.prose th {
+  background: var(--surface-subtle);
+  color: var(--text-primary);
+  font-weight: 500;
+  font-size: 0.8em;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+}
+.prose tr:nth-child(even) td { background: color-mix(in srgb, var(--surface-subtle) 40%, transparent); }
 
 /* ════════════════════════════════════════════════════════════
    Responsive — mobile-first refinements (breakpoint: 768px)

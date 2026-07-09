@@ -1,0 +1,141 @@
+---
+title: "Running PRD"
+slug: "building-the-running-section"
+date: "2026-07-09"
+summary: "A rough PRD I used to outline what I wanted to build for the Running sub-section of Hobbies on this website — the privacy tradeoffs, solution options, and the data spec."
+tags: ["product", "running", "AI", "agents"]
+draft: false
+---
+
+The following is a rough PRD. I used this framework to outline what I wanted to build for the Running sub-section of Hobbies on this website.
+
+## What is the goal?
+
+This product is a feature on the personal website of Chris Mattam. The objective is to ensure that Chris's runs are logged and displayed as a hobby he pursues. The product will enable website visitors to track:
+
+1. The Distance Chris ran last month *(P0)*
+2. The Median pace Chris runs at *(P1)*
+3. The Number of runs Chris ran last month *(P1)*
+4. The Time Chris ran last month *(P2)*
+5. Each individual run entry along with the specific metrics of that run as covered above
+
+## What is the problem we are trying to solve?
+
+The personal website has a Hobbies section which has a Running sub-section listed as a hobby, but website visitors have no way to get insights into how active I am with this hobby.
+
+This data and its associated insights are available from two sources — Strava and Fitbit (Google Health).
+
+However, this data contains sensitive personal data which should ideally not be publicly available:
+
+1. Health data such as heart rate, etc.
+2. Run map data which shows typical running locations
+
+These concerns lead to the following conclusions:
+
+1. Strava's social tools cannot be used as they require the profile and its associated activities to be public.
+2. Fitbit / Google Health has no inherent social sharing features.
+
+## How are we solving this currently?
+
+Currently the runs are tracked either via the Strava app or through my Fitbit health tracker. The run data can be seen through the Strava / Google Health mobile application or through the Strava Web portal.
+
+The run data stored on Fitbit is not exposed to any social circles unless explicitly shared. The data is shared to social circles which are not clearly covered or which cannot be managed — broken user flow.
+
+The run data stored on Strava is available to all profile followers on Strava.
+
+Strava currently offers two types of embeddable widgets. The weekly Summary Widget works well for aggregate stats, but individual activity embeds display map data for each run — a tradeoff we have to work around. The bigger blocker is that this only works if the profile and activities privacy are already set to Public. This takes us back to the tradeoff discussion that prompted the need for this feature.
+
+## What will success look like?
+
+Success will be when:
+
+1. All run data is automatically captured with high accuracy and updated on the website without any human intervention *(P0)*
+2. The Running section and individual runs can easily be shared with a distinct link *(P1)*
+
+The north star metric for this product: runs correctly added to the website.
+
+## What are the possible solutions?
+
+1. Embedding Strava widgets directly into the website
+2. Building a Strava data pipeline to Google Sheets using Make.com or similar
+3. AI Agent which can read data from Google Health
+
+<table>
+  <thead>
+    <tr><th>Solution</th><th>Trade Offs</th><th>How will it work?</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Strava Widgets</td>
+      <td>Lack of privacy. Exposing data to the public vs. tracking less data to preserve privacy.</td>
+      <td>Code to embed the widgets provided by Strava in account settings.</td>
+    </tr>
+    <tr>
+      <td>Make.com</td>
+      <td>Multiple points of failure in the automation pipeline. Boring — what are we in 2015?</td>
+      <td>Create a data pipeline automation through Make.com, send Strava data to a Google Sheet, build a Python workflow to update the website.</td>
+    </tr>
+    <tr>
+      <td>AI Agent (Google Health)</td>
+      <td>Token utilization. Data can only be updated monthly.</td>
+      <td>Create an AI agent and connect it to the Google MCP server. Schedule monthly Takeouts sent to Gmail. Agent reads Gmail through the MCP, finds the email with Google Health takeout data and reads it. The agent opens a PR to update the website with the monthly run data.</td>
+    </tr>
+  </tbody>
+</table>
+
+## What needs to be part of the run data?
+
+The following data needs to be extracted from the Google Takeout data as part of the monthly runs summary, along with the month name:
+
+<table>
+  <thead>
+    <tr><th>Data from Google Health</th><th>Mapped to on the Website</th><th>Comments</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>SUM(distance)</code> across Run entries where <code>distance != null</code> and <code>pace != null</code>, <code>startTime</code> in target month</td>
+      <td>Distance Chris ran last month</td>
+      <td><code>distanceUnit</code> = Kilometer. Runs missing distance/pace are excluded entirely, not just from this metric.</td>
+    </tr>
+    <tr>
+      <td><code>MEDIAN(pace)</code> across the same filtered set, converted sec/km → min:sec/km</td>
+      <td>Median Pace of Run</td>
+      <td><code>pace</code> is Fitbit's precomputed <code>activeDuration ÷ distance</code> — already excludes paused time.</td>
+    </tr>
+    <tr>
+      <td><code>COUNT()</code> of the same filtered set</td>
+      <td>Number of Runs last month</td>
+      <td>Only counts runs with both distance and pace recorded — GPS-less auto-detected runs are dropped.</td>
+    </tr>
+    <tr>
+      <td><code>SUM(activeDuration)</code> across the same filtered set, ms → hh:mm</td>
+      <td>Total time Chris ran last month</td>
+      <td>Uses <code>activeDuration</code>, not <code>duration</code> — <code>duration</code> includes paused/stopped time and would inflate the total.</td>
+    </tr>
+  </tbody>
+</table>
+
+The following data needs to be extracted from each individual run of the month:
+
+<table>
+  <thead>
+    <tr><th>Data from Google Health</th><th>Mapped to on the Website</th><th>Comments</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>distance</code> (+ <code>distanceUnit</code>)</td>
+      <td>Distance Covered</td>
+      <td>Entry excluded from the site entirely if this is null — no blank/placeholder shown.</td>
+    </tr>
+    <tr>
+      <td><code>pace</code>, converted sec/km → min:sec/km</td>
+      <td>Pace of the Run</td>
+      <td>Verified <code>pace = 3600 / speed</code>; both already exclude paused time.</td>
+    </tr>
+    <tr>
+      <td><code>activeDuration</code>, ms → mm:ss</td>
+      <td>Time of the Run</td>
+      <td>Not <code>duration</code> (elapsed, includes pauses) — <code>activeDuration</code> is true moving time and is the value Fitbit used to compute <code>pace</code>, so time and pace stay consistent.</td>
+    </tr>
+  </tbody>
+</table>
