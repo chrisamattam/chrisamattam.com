@@ -2,68 +2,85 @@
 title: "Running PRD"
 slug: "building-the-running-section"
 date: "2026-07-09"
-summary: "A rough PRD for the Running hobby section — the privacy tradeoffs with Strava, why I'm not embedding widgets, and the AI agent approach I'm taking instead."
+summary: "A rough PRD I used to outline what I wanted to build for the Running sub-section of Hobbies on this website — the privacy tradeoffs, solution options, and the data spec."
 tags: ["product", "running", "AI", "agents"]
 draft: false
 ---
 
-The personal website has a Hobbies section with a Running sub-section — but right now, visitors have no way to know how active I actually am. This post is a rough PRD I wrote to think through how to fix that.
+The following is a rough PRD. I used this framework to outline what I wanted to build for the Running sub-section of Hobbies on this website.
 
 ## What is the goal?
 
-The objective is to log my runs on the site so visitors can get a real sense of the hobby. Concretely, that means displaying:
+This product is a feature on the personal website of Chris Mattam. The objective is to ensure that Chris's runs are logged and displayed as a hobby he pursues. The product will enable website visitors to track:
 
-- Distance run last month *(P0)*
-- Median pace *(P1)*
-- Average number of runs last month *(P1)*
-- Average time per run last month *(P2)*
-- Individual run entries with per-run metrics
+1. The Distance Chris ran last month *(P0)*
+2. The Median pace Chris runs at *(P1)*
+3. The Number of runs Chris ran last month *(P1)*
+4. The Time Chris ran last month *(P2)*
+5. Each individual run entry along with the specific metrics of that run as covered above
 
-## The problem: privacy
+## What is the problem we are trying to solve?
 
-My runs are tracked via Strava and a Fitbit health tracker. Both hold data I'm not comfortable making fully public:
+The personal website has a Hobbies section which has a Running sub-section listed as a hobby, but website visitors have no way to get insights into how active I am with this hobby.
 
-1. **Health data** — heart rate and other biometrics
-2. **Route map data** — which reveals where I typically run
+This data and its associated insights are available from two sources — Strava and Fitbit (Google Health).
 
-This rules out the obvious shortcuts:
+However, this data contains sensitive personal data which should ideally not be publicly available:
 
-- **Strava's social tools** require the profile and all activities to be set to public.
-- **Fitbit / Google Health** has no native social sharing at all.
+1. Health data such as heart rate, etc.
+2. Run map data which shows typical running locations
 
-## What I explored
+These concerns lead to the following conclusions:
 
-**Strava widgets** — Strava offers an Activity Widget and a Summary Widget that can be embedded in a blog. The Summary Widget would work for aggregate stats, but it still requires the profile to be fully public. And individual activity embeds show the map. Privacy concern remains.
+1. Strava's social tools cannot be used as they require the profile and its associated activities to be public.
+2. Fitbit / Google Health has no inherent social sharing features.
 
-**Make.com pipeline** — Build an automation that pulls Strava data into a Google Sheet, then write a Python script to update the website. It works, but there are multiple points of failure, and honestly — what year is it?
+## How are we solving this currently?
 
-**AI Agent via Google Health** — This is the approach I'm going with. The plan:
+Currently the runs are tracked either via the Strava app or through my Fitbit health tracker. The run data can be seen through the Strava / Google Health mobile application or through the Strava Web portal.
 
-1. Schedule monthly Google Takeout exports to be sent to Gmail
-2. Build an AI agent connected to the Google MCP server
-3. The agent reads Gmail, finds the Takeout email, parses the run data
-4. The agent opens a PR to update the website with the month's run data
+The run data stored on Fitbit is not exposed to any social circles unless explicitly shared. The data is shared to social circles which are not clearly covered or which cannot be managed — broken user flow.
 
-The tradeoffs are real — token usage is non-trivial, and the data can only update monthly. But it keeps sensitive data private while still surfacing the metrics that matter.
+The run data stored on Strava is available to all profile followers on Strava.
 
-## What the agent needs to extract
+Strava currently offers two types of embeddable widgets. The weekly Summary Widget works well for aggregate stats, but individual activity embeds display map data for each run — a tradeoff we have to work around. The bigger blocker is that this only works if the profile and activities privacy are already set to Public. This takes us back to the tradeoff discussion that prompted the need for this feature.
 
-From the Google Takeout export, the agent will pull:
+## What will success look like?
 
-- Date and duration of each run
-- Distance covered
-- Pace (derived from duration + distance)
-- No heart rate, no route maps
+Success will be when:
 
-Aggregate stats (monthly distance, median pace, average runs per month) get computed from the individual entries before being written to the site.
+1. All run data is automatically captured with high accuracy and updated on the website without any human intervention *(P0)*
+2. The Running section and individual runs can easily be shared with a distinct link *(P1)*
 
-## What success looks like
+The north star metric for this product: runs correctly added to the website.
 
-1. All run data is automatically captured and updated without manual intervention *(P0)*
-2. The Running section and individual runs can be shared with a distinct link *(P1)*
+## What are the possible solutions?
 
-The north star metric: runs correctly added to the website, with zero location or health data exposed.
+1. Embedding Strava widgets directly into the website
+2. Building a Strava data pipeline to Google Sheets using Make.com or similar
+3. AI Agent which can read data from Google Health
 
----
+| Solution | Trade Offs | How will it work? |
+|---|---|---|
+| Strava Widgets | Lack of privacy. Exposing data to the public vs. tracking less data to preserve privacy. | Code to embed the widgets provided by Strava in account settings. |
+| Make.com | Multiple points of failure in the automation pipeline. Boring — what are we in 2015? | Create a data pipeline automation through Make.com, send Strava data to a Google Sheet, build a Python workflow to update the website. |
+| AI Agent (Google Health) | Token utilization. Data can only be updated monthly. | Create an AI agent and connect it to the Google MCP server. Schedule monthly Takeouts sent to Gmail. Agent reads Gmail through the MCP, finds the email with Google Health takeout data and reads it. The agent opens a PR to update the website with the monthly run data. |
 
-*This is a live PRD — the build is in progress. I'll follow up once it's shipped.*
+## What needs to be part of the run data?
+
+The following data needs to be extracted from the Google Takeout data as part of the monthly runs summary, along with the month name:
+
+| Data from Google Health | Mapped to on the Website | Comments |
+|---|---|---|
+| `SUM(distance)` across Run entries where `distance != null` and `pace != null`, `startTime` in target month | Distance Chris ran last month | `distanceUnit` = Kilometer. Runs missing distance/pace are excluded entirely, not just from this metric. |
+| `MEDIAN(pace)` across the same filtered set, converted sec/km → min:sec/km | Median Pace of Run | `pace` is Fitbit's precomputed `activeDuration ÷ distance` — already excludes paused time. |
+| `COUNT()` of the same filtered set | Number of Runs last month | Only counts runs with both distance and pace recorded — GPS-less auto-detected runs are dropped. |
+| `SUM(activeDuration)` across the same filtered set, ms → hh:mm | Total time Chris ran last month | Uses `activeDuration`, not `duration` — `duration` includes paused/stopped time and would inflate the total. |
+
+The following data needs to be extracted from each individual run of the month:
+
+| Data from Google Health | Mapped to on the Website | Comments |
+|---|---|---|
+| `distance` (+ `distanceUnit`) | Distance Covered | Entry excluded from the site entirely if this is null — no blank/placeholder shown. |
+| `pace`, converted sec/km → min:sec/km | Pace of the Run | Verified `pace = 3600 / speed`; both already exclude paused time. |
+| `activeDuration`, ms → mm:ss | Time of the Run | Not `duration` (elapsed, includes pauses) — `activeDuration` is true moving time and is the value Fitbit used to compute `pace`, so time and pace stay consistent. |
