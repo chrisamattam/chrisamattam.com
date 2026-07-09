@@ -179,6 +179,33 @@ canvas { background: transparent; }
 .prose tr:nth-child(even) td { background: color-mix(in srgb, var(--surface-subtle) 40%, transparent); }
 
 /* ════════════════════════════════════════════════════════════
+   Running section
+   ════════════════════════════════════════════════════════════ */
+.running-stats {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.run-log-row {
+  display: grid;
+  grid-template-columns: 1fr 100px 110px 80px;
+  gap: 0.5rem;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 14px;
+  align-items: center;
+}
+.run-log-header {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  border-bottom: none;
+  padding-bottom: 0.4rem;
+}
+
+/* ════════════════════════════════════════════════════════════
    Responsive — mobile-first refinements (breakpoint: 768px)
    ════════════════════════════════════════════════════════════ */
 
@@ -296,4 +323,11 @@ html, body { overflow-x: clip; }
   .hiking-explorer { flex-direction: column-reverse; height: auto; min-height: 0; }
   .hiking-list { flex: none; border-right: none; overflow-y: visible; }
   .hiking-globe-pane { height: 50vh; min-height: 340px; }
+}
+
+@media (max-width: 540px) {
+  .run-log-row { grid-template-columns: 1fr 90px; gap: 0.25rem 0.5rem; }
+  .run-log-row > span:nth-child(3) { grid-column: 1; }
+  .run-log-row > span:nth-child(4) { grid-column: 2; }
+  .run-log-header { display: none; }
 }
