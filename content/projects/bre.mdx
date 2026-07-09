@@ -9,6 +9,115 @@ status: shipped
 badgeTone: amber
 featured: true
 liveUrl: "https://butter.money/eligibility-check"
-tags: ["fintech", "rules-engine", "eligibility"]
+tags: ["fintech", "rules-engine", "eligibility", "product-led", "technical-architecture"]
 summary: "Lender eligibility engine powering real-time loan offer generation. The consumer-facing expression is the eligibility calculator; advanced versions are used internally by the ops team and within the partner portal. Encodes lender-specific credit, income, and property rules."
+problem: "Butter Money worked with 30–40 lenders, each with up to ~20 eligibility rules. Determining which lenders a customer actually qualified for — and at what rate — meant cross-referencing all of it for every applicant. Our operations team (who were also our sales team) did this manually, live on calls and again during offer curation. That single constraint directly hit our throughput, conversion, and revenue metrics."
 ---
+
+## The problem: home loan eligibility was a computational problem, and we were solving it manually
+
+<table>
+  <thead>
+    <tr><th></th><th>Before</th><th>Metric hit</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Throughput</td>
+      <td>3–4 hrs to generate one offer, manually checking docs against dozens of lenders' criteria</td>
+      <td>Ops capacity per applicant</td>
+    </tr>
+    <tr>
+      <td>Completeness</td>
+      <td>Easy to miss a niche rule (e.g. a gender-based rate rebate) — offers sometimes worse than market</td>
+      <td>Conversion, revenue (lost to direct bank/DSA offers)</td>
+    </tr>
+    <tr>
+      <td>Trust</td>
+      <td>Preliminary "guesstimate" offer on the first call often didn't match the final curated one</td>
+      <td>NPS, drop-off between application and disbursal</td>
+    </tr>
+  </tbody>
+</table>
+
+## Why now, why this way
+
+This wasn't built as an internal efficiency tool — it was treated as the core product of the business, because it was the thing that could actually separate Butter Money from the rest of the market.
+
+<table>
+  <tbody>
+    <tr>
+      <td>Market context</td>
+      <td>DSAs — the standard players in this space — ran eligibility the same way we used to: manual, guesswork-based, dependent on individual experience</td>
+    </tr>
+    <tr>
+      <td>The bet</td>
+      <td>Owning eligibility through technology and product, not people, was a structural advantage DSAs couldn't easily replicate</td>
+    </tr>
+    <tr>
+      <td>Team</td>
+      <td>~12 people total — Founder, Product (me), Chief of Staff, 1 ops/loan officer on the business side; fractional CTO + 2 full-time engineers + 2 interns on tech</td>
+    </tr>
+    <tr>
+      <td>Build split</td>
+      <td>Product owned the business logic — identifying and quantifying lender rules (~2 months). Engineering owned system architecture and implementation (~3 months), in constant back-and-forth with product as edge cases surfaced</td>
+    </tr>
+    <tr>
+      <td>Friction</td>
+      <td>The project outlived a couple of technical leadership transitions before shipping — a few fractional CTOs came and went before landing on the one who saw it through</td>
+    </tr>
+  </tbody>
+</table>
+
+## What we built
+
+The core decision: encode lender eligibility rules into a rules engine that could evaluate applicants in memory, instead of querying a database for every case.
+
+<table>
+  <tbody>
+    <tr>
+      <td>Engine</td>
+      <td><a href="https://github.com/jruizgit/rules">durable_rules</a> (open-source) — built on the Rete algorithm, the same forward-chaining approach used in classic expert systems</td>
+    </tr>
+    <tr>
+      <td>How it works</td>
+      <td>All lender eligibility rules are loaded into memory once. Each applicant is evaluated against them directly — no per-query database lookup</td>
+    </tr>
+    <tr>
+      <td>Why it mattered</td>
+      <td>Offer computation dropped from minutes to microseconds, because eligibility checks stopped being a search problem and became a memory lookup</td>
+    </tr>
+    <tr>
+      <td>Surfaces powered</td>
+      <td>Consumer-facing eligibility calculator, internal ops tooling, channel partner portal</td>
+    </tr>
+    <tr>
+      <td>My role in the build</td>
+      <td>Embedded through the full engineering phase — continuously testing rule outputs and engine performance, flagging production-readiness. Iteration continued post-launch as new lender data and edge cases came in</td>
+    </tr>
+  </tbody>
+</table>
+
+## Impact
+
+<table>
+  <thead>
+    <tr><th>Metric</th><th>Before</th><th>After</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Offer generation time</td>
+      <td>3–4 hours</td>
+      <td>~30 minutes</td>
+    </tr>
+    <tr>
+      <td>Application-to-disbursal conversion</td>
+      <td>~30%</td>
+      <td>~44% (+47% relative)</td>
+    </tr>
+    <tr>
+      <td>NPS</td>
+      <td>7.6</td>
+      <td>8.1</td>
+    </tr>
+  </tbody>
+</table>
