@@ -1,0 +1,52 @@
+---
+title: "Building Agents — or Over-Engineering?"
+slug: "building-agents-or-over-engineering"
+date: "2026-07-09"
+summary: "Everyone's building agents. But do you actually need one? A framework for deciding when automation earns its keep — and when it's just complexity dressed up as productivity."
+tags: ["AI", "agents", "product", "startups"]
+draft: false
+---
+
+The new buzzword is Building Agents. But do you really need to be building one? Do you even actually need them?
+
+YC's take: *"The next trillion users on the internet won't be people. They'll be AI agents."*
+
+I went down this rabbit hole. To build the next generation of startups, you need a vision of the future — or at the very least a sense of the direction. What YC is communicating is that most modern products were shaped by focusing on clean, human-friendly interfaces. The next wave won't be built with the focus on UI or UX from a human perspective. It'll be built around APIs and frameworks that are native to AI agents.
+
+## So what is an AI agent, exactly?
+
+Think of it as a worker tasked with achieving a goal. The agent analyses the problems it needs to solve, then follows through — making decisions by itself. That's the crux of it.
+
+It's like an employee given a business goal to hit. The difference: this employee can run 24/7 and delivers consistently good performance on repetitive tasks.
+
+But agents come with real downsides. They consume tokens. Right now, most AI labs are subsidising token costs to drive adoption — but burning through cash reserves to fund that adoption won't last indefinitely. The real question becomes: can the agent do the task more cheaply than a human? That calculation changes depending on the task, the frequency, and the model costs at the time.
+
+## My own experience
+
+This website is agentically built from scratch — thanks, Claude Code.
+
+I've also built agents and sub-agents to keep the site updated. And the challenge isn't building the agents. The challenge is understanding whether you actually need them.
+
+While building the chatbot that acts as my chief of staff for this website, I was very tempted to add agentic workflows — automatically booking calendar calls on my behalf, for example. That would have consumed significant token costs in the build phase, introduced engineering complications, and created a more complex codebase with compounding problems downstream.
+
+My decision: keep the chatbot as simple as possible. I still don't know how people are going to use it. I'd rather gather data on real usage first, then make a more data-driven call.
+
+Instead, I automated the tasks I *knew* would be repetitive — work that would require meaningful time investment if I did it manually. The clearest example: keeping the website updated with books I read.
+
+The sub-agent reads my Gmail through the Google MCP server, checks if I've purchased any new books against what's already on the site, pulls cover images from Google Books or Open Library, and raises a PR for me to review in the morning. It's a workflow I'd have to do manually every few weeks otherwise. The frequency justifies the build cost.
+
+## The framework I'm using
+
+At the end of the day, you need a framework for deciding whether to build an agent and automate a workflow. Mine evaluates along two axes:
+
+**Frequency** — How often does this task happen? A monthly task is a different bet from a daily one.
+
+**Tokens consumed** — What does it cost to build and maintain the agent? Not just the upfront build, but the ongoing inference cost per run.
+
+If frequency is high and token cost per run is low, automation earns its keep quickly. If it's a rare task or the token cost is high, a human doing it manually may be cheaper — at least until model costs drop further.
+
+Do you have a framework for these decisions? Let's connect and discuss.
+
+---
+
+*~This piece has been powered by caffeine and Wisprflow.*

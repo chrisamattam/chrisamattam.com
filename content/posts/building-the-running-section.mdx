@@ -1,0 +1,69 @@
+---
+title: "How I'm Building the Running Section of This Website"
+slug: "building-the-running-section"
+date: "2026-07-09"
+summary: "A rough PRD for the Running hobby section — the privacy tradeoffs with Strava, why I'm not embedding widgets, and the AI agent approach I'm taking instead."
+tags: ["product", "running", "AI", "agents"]
+draft: false
+---
+
+The personal website has a Hobbies section with a Running sub-section — but right now, visitors have no way to know how active I actually am. This post is a rough PRD I wrote to think through how to fix that.
+
+## What is the goal?
+
+The objective is to log my runs on the site so visitors can get a real sense of the hobby. Concretely, that means displaying:
+
+- Distance run last month *(P0)*
+- Median pace *(P1)*
+- Average number of runs last month *(P1)*
+- Average time per run last month *(P2)*
+- Individual run entries with per-run metrics
+
+## The problem: privacy
+
+My runs are tracked via Strava and a Fitbit health tracker. Both hold data I'm not comfortable making fully public:
+
+1. **Health data** — heart rate and other biometrics
+2. **Route map data** — which reveals where I typically run
+
+This rules out the obvious shortcuts:
+
+- **Strava's social tools** require the profile and all activities to be set to public.
+- **Fitbit / Google Health** has no native social sharing at all.
+
+## What I explored
+
+**Strava widgets** — Strava offers an Activity Widget and a Summary Widget that can be embedded in a blog. The Summary Widget would work for aggregate stats, but it still requires the profile to be fully public. And individual activity embeds show the map. Privacy concern remains.
+
+**Make.com pipeline** — Build an automation that pulls Strava data into a Google Sheet, then write a Python script to update the website. It works, but there are multiple points of failure, and honestly — what year is it?
+
+**AI Agent via Google Health** — This is the approach I'm going with. The plan:
+
+1. Schedule monthly Google Takeout exports to be sent to Gmail
+2. Build an AI agent connected to the Google MCP server
+3. The agent reads Gmail, finds the Takeout email, parses the run data
+4. The agent opens a PR to update the website with the month's run data
+
+The tradeoffs are real — token usage is non-trivial, and the data can only update monthly. But it keeps sensitive data private while still surfacing the metrics that matter.
+
+## What the agent needs to extract
+
+From the Google Takeout export, the agent will pull:
+
+- Date and duration of each run
+- Distance covered
+- Pace (derived from duration + distance)
+- No heart rate, no route maps
+
+Aggregate stats (monthly distance, median pace, average runs per month) get computed from the individual entries before being written to the site.
+
+## What success looks like
+
+1. All run data is automatically captured and updated without manual intervention *(P0)*
+2. The Running section and individual runs can be shared with a distinct link *(P1)*
+
+The north star metric: runs correctly added to the website, with zero location or health data exposed.
+
+---
+
+*This is a live PRD — the build is in progress. I'll follow up once it's shipped.*
