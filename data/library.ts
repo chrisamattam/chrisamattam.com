@@ -178,4 +178,5 @@ export const library: LibraryBook[] = [
   { title: "Not Just an Accountant: The Diary of the Nation's Conscience Keeper", author: "Vinod Rai", acquired: "2023-03-16", format: "Physical", cover: "/images/books/not-just-an-accountant.jpg" },
   { title: "CULTure at Zomato : How to Rewire Your Brain for Greatness", author: "Deepinder Goyal, Ashish Goel, Naina Sahni", acquired: "2026-07-03", format: "Physical", cover: "/images/books/culture-at-zomato-how-to-rewire-your-brain-for-greatness.jpg" },
   { title: "The Book of Five Rings", author: "Miyamoto Musashi", acquired: "2026-07-06", format: "Physical", cover: "/images/books/the-book-of-five-rings.jpg" },
+  { title: "Butter", author: "Asako Yuzuki", acquired: "2026-07-08", format: "Physical", cover: "/images/books/butter.jpg" },
 ];
