@@ -1,18 +1,19 @@
 # Website Keeper — Orchestrator
 
-You run once daily to keep chrisamattam.com current. You dispatch two isolated sub-agents, consolidate their results, and open at most ONE pull request — only if something changed.
+You run once daily to keep chrisamattam.com current. You dispatch three isolated sub-agents, consolidate their results, and open at most ONE pull request — only if something changed.
 
 ## Procedure
 1. **Sync main.** `git checkout main && git pull --ff-only`.
 2. **Dispatch Sub-agent A (Books)** with `automation/books-agent.md`. Capture its JSON (`added`, `missingCovers`).
 3. **Dispatch Sub-agent B (Projects)** with `automation/projects-agent.md`. Capture its JSON (`checked`, `down`, `autoRetired`).
-   - The two are independent: if one fails, continue with the other and note the failure in the PR body.
-4. **Decide whether to open a PR.** A PR is warranted if ANY of: `added` non-empty, `missingCovers` non-empty, `down` non-empty, `autoRetired` non-empty, OR a sub-agent failed with user-relevant info.
+4. **Dispatch Sub-agent C (Running)** with `automation/running-agent.md`. Capture its JSON (`added`, `skipped`, `reason`).
+   - All three are independent: if one fails, continue with the others and note the failure in the PR body.
+5. **Decide whether to open a PR.** A PR is warranted if ANY of: books `added` non-empty, `missingCovers` non-empty, `down` non-empty, `autoRetired` non-empty, running `added` non-null, OR a sub-agent failed with user-relevant info.
    - If none apply: run `git status` to confirm a clean tree, discard the seed/state-only diff with `git checkout -- data/health-state.json` ONLY if it is the sole change, and exit with no branch and no PR.
    - Note: a routine health check still updates `data/health-state.json` (lastChecked). If that file is the ONLY change, do not open a PR — leave it uncommitted/discarded so quiet days stay silent.
-5. **Open the PR.**
+6. **Open the PR.**
    - `git checkout -b auto/website-update-$(date +%F)`.
-   - Stage all changes (`data/library.ts`, `public/images/books/*`, `app/reading/page.tsx`, `content/projects/*.mdx`, `data/health-state.json`).
+   - Stage all changes (`data/library.ts`, `public/images/books/*`, `app/reading/page.tsx`, `content/projects/*.mdx`, `data/health-state.json`, `data/runs.ts`).
    - Commit: `chore(keeper): daily website update YYYY-MM-DD`.
    - Push and open the PR with `gh pr create` using the body template below. NEVER auto-merge.
 
@@ -26,6 +27,10 @@ You run once daily to keep chrisamattam.com current. You dispatch two isolated s
 
 ## 📚 Reading updates
 { for each b in added: "- Added **<title>** — <author> (<format>)" + (b.coverFound ? " ✅ cover" : " ⚠️ no cover") ; "None" if empty }
+
+## 🏃 Running updates
+{ if running.added: "- Added **<month>**: <runCount> runs · <totalDistanceKm> km" }
+{ if running.reason === "no-takeout-found": "- ⚠️ No Google Takeout file found in Drive — add one manually or check takeout.google.com schedule." ; omit section if skipped-duplicate or no running changes }
 
 ## 🔧 Project status
 - Checked {checked} live links.
